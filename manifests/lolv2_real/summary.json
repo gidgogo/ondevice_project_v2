@@ -1,0 +1,18 @@
+{
+  "dataset": "LOL-v2-real",
+  "counts": {
+    "train": 620,
+    "validation": 69,
+    "test": 100
+  },
+  "seed": 42,
+  "near_threshold": 20,
+  "train_scene_groups": 256,
+  "validation_scene_groups": 29,
+  "manifests_sha256": {
+    "train": "88503f983d9773943c9d10bc5a405f607515f6bed1cbf8399333555ca07f5990",
+    "validation": "ec2a263cf1e582aa206d1e60ebc7d4c2925b723b3e38a704b508911de66327b1",
+    "test": "fe28cc6e8635cb56af8791134a4e5ea5b17e1f7817ecfc0731d2177b366ab397"
+  },
+  "test_access": "file names and SHA256 only in this script"
+}

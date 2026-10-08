@@ -1,0 +1,560 @@
+{
+  "dataset": "LOL-v2-real",
+  "split": "validation",
+  "split_seed": 42,
+  "partition_algorithm": "official Train -> scene groups (shared file SHA256 or normal-image 16x16 average-hash Hamming <= 20) -> seeded group shuffle -> exact subset-sum",
+  "pairs": [
+    {
+      "name": "00011.png",
+      "low": "Train/Low/00011.png",
+      "high": "Train/Normal/00011.png",
+      "low_sha256": "e85ca1c60e4329fe788ae5f95ce2059b52f27540ad997921aa0745b5650aee97",
+      "high_sha256": "339726e28033d499f057d40492b0e02d613b231ce8f9d5797993bdd01a009f3f",
+      "scene_group": 3
+    },
+    {
+      "name": "00012.png",
+      "low": "Train/Low/00012.png",
+      "high": "Train/Normal/00012.png",
+      "low_sha256": "d9e08af329c25de6dd57e374c12aa404859116d1449158563a9b9d010d76cbdf",
+      "high_sha256": "7d4a35aabf217363e281051a7e75b271e35059d998bdb4ac27f09de0bc047e00",
+      "scene_group": 3
+    },
+    {
+      "name": "00017.png",
+      "low": "Train/Low/00017.png",
+      "high": "Train/Normal/00017.png",
+      "low_sha256": "b596b69984abbf059d7f2cc1f323fd245b2b43afb0793872af0e56decff34088",
+      "high_sha256": "b28cc124a048704181e359701470e00133e2742f7626907124cecef5da5fba62",
+      "scene_group": 5
+    },
+    {
+      "name": "00018.png",
+      "low": "Train/Low/00018.png",
+      "high": "Train/Normal/00018.png",
+      "low_sha256": "c662866c39df1193a44f13dec930b656655f0c96d0fe7784cb900df6b25d734e",
+      "high_sha256": "7fd64d76b00c289e7234de5d76c43414f8389edffa206359d06bc032c8e5ec3a",
+      "scene_group": 5
+    },
+    {
+      "name": "00019.png",
+      "low": "Train/Low/00019.png",
+      "high": "Train/Normal/00019.png",
+      "low_sha256": "d54bc6c22033e185978c4eabe3fac85d2ef48f85bd28d942cf6cb4498dec4406",
+      "high_sha256": "4ef28b354f411edb1d037a9d2a9f3c1a507d101734210432680b3a3de2c878f2",
+      "scene_group": 5
+    },
+    {
+      "name": "00020.png",
+      "low": "Train/Low/00020.png",
+      "high": "Train/Normal/00020.png",
+      "low_sha256": "3d5c47fa341e8f16be11887a4048e4f45db8d7ca8bbf658d6c0e5b781d89adb5",
+      "high_sha256": "161d10067fde3be05231628ffe7cdbad9e1e6d13d45f334df33b225765447091",
+      "scene_group": 5
+    },
+    {
+      "name": "00033.png",
+      "low": "Train/Low/00033.png",
+      "high": "Train/Normal/00033.png",
+      "low_sha256": "61ed93b774773deef9cd1257b193b01bed797e91e34fc529e864af62dd7a335c",
+      "high_sha256": "28948c935836a206c54abbcb1e9b4d61f6fb45815fac80db006f3727107c18f0",
+      "scene_group": 9
+    },
+    {
+      "name": "00034.png",
+      "low": "Train/Low/00034.png",
+      "high": "Train/Normal/00034.png",
+      "low_sha256": "9f2431d8823f1849b54f435effb86f9ad71869e158f9eeb89d77680685c28115",
+      "high_sha256": "84f2e181c2290f8c3357dba745e26b89a0e6658a3ba8d6e4f95f57be30256123",
+      "scene_group": 9
+    },
+    {
+      "name": "00101.png",
+      "low": "Train/Low/00101.png",
+      "high": "Train/Normal/00101.png",
+      "low_sha256": "24a173bc7adb97f9c4fe863e84e62749902860ec8a0656b410d6c8085e575296",
+      "high_sha256": "977ae69caf23610a306c5b017675eba5962a51fd9e27cf4884afabb1c8edf1c7",
+      "scene_group": 29
+    },
+    {
+      "name": "00102.png",
+      "low": "Train/Low/00102.png",
+      "high": "Train/Normal/00102.png",
+      "low_sha256": "69672488074943067be8de90f3d97cf881b3fef2ed71e2923cceb1a685367edc",
+      "high_sha256": "6110542d3a51b462241338fb34d900a6883c51ac03841b1480fe1dff9f145a70",
+      "scene_group": 29
+    },
+    {
+      "name": "00103.png",
+      "low": "Train/Low/00103.png",
+      "high": "Train/Normal/00103.png",
+      "low_sha256": "36dcf55479a2c7626187a75cc51d77676f51a40f6f2f4e88dad80b40fe8a8c2e",
+      "high_sha256": "d414a743283723fc5b62fd1d8871c1c3040f2cf44db2aed1d176e1b070a25175",
+      "scene_group": 29
+    },
+    {
+      "name": "00104.png",
+      "low": "Train/Low/00104.png",
+      "high": "Train/Normal/00104.png",
+      "low_sha256": "13e6483b85261a0c29f4d208f394c2378da2d561b9d59514a6b9985e55a9b485",
+      "high_sha256": "28fdcc5af2b546f7fdaf53309dfa0f92f7876127ccb424bdd5de0e80907be902",
+      "scene_group": 29
+    },
+    {
+      "name": "00155.png",
+      "low": "Train/Low/00155.png",
+      "high": "Train/Normal/00155.png",
+      "low_sha256": "1861d5aa2df39b63dec4194e98425e67fd5cea4a681a7310ee0f2bcded7aa359",
+      "high_sha256": "ff6648f3e4882435b587d876f1a02f4b9fd994ddb7c0d8315143644c394c9b47",
+      "scene_group": 45
+    },
+    {
+      "name": "00156.png",
+      "low": "Train/Low/00156.png",
+      "high": "Train/Normal/00156.png",
+      "low_sha256": "9a1afec8c167197b6565a1f7578ef53ad4b25d2fbd32f72dc65b46c4d4f3f32a",
+      "high_sha256": "a2839748d245863bb743cd7022da64c9c26054dd56a227c4383d58b861a516c1",
+      "scene_group": 45
+    },
+    {
+      "name": "00158.png",
+      "low": "Train/Low/00158.png",
+      "high": "Train/Normal/00158.png",
+      "low_sha256": "ca8bf99daa74fac9a56efd485934ee67b0ecc5517a3e25fc7cdf1b595f7c9043",
+      "high_sha256": "576cf26bf03a609aa89a9796e4238e0dfe6c46271d14c5efadb2a3bcc7f5a21d",
+      "scene_group": 204
+    },
+    {
+      "name": "00171.png",
+      "low": "Train/Low/00171.png",
+      "high": "Train/Normal/00171.png",
+      "low_sha256": "4a3f343fb5ef158ea273d279a8955eff54678c884d31631bd07e4ee3f6cec8d4",
+      "high_sha256": "062da793406a831f2c58f8195030774b8fea07c56c5acddfcfe49d45a1450938",
+      "scene_group": 51
+    },
+    {
+      "name": "00172.png",
+      "low": "Train/Low/00172.png",
+      "high": "Train/Normal/00172.png",
+      "low_sha256": "f1902e6342fa6f261d6d08ac76f6100da0d4f3cfb2b4ab5daab0d5178b8d88ca",
+      "high_sha256": "9c4880bf25c73989122a5a73d0ea7edb61190b0fcf2c104b3f692275c18807de",
+      "scene_group": 51
+    },
+    {
+      "name": "00173.png",
+      "low": "Train/Low/00173.png",
+      "high": "Train/Normal/00173.png",
+      "low_sha256": "d6fe6f0d8ba3898f66579ad29edb49192b13a11966c061dabae1bf2f3555cf11",
+      "high_sha256": "b9f2aea8be923ccdf05b4836ee6b788ce4d6696c950b31101a857e38ccb0062a",
+      "scene_group": 51
+    },
+    {
+      "name": "00199.png",
+      "low": "Train/Low/00199.png",
+      "high": "Train/Normal/00199.png",
+      "low_sha256": "3b511e9bdafa369e054e20a9678a7c8cf67a70f6f9f70bd2579414227f540be0",
+      "high_sha256": "98037e46fc20ccdb0877fc44e3c8856cb8d2f02aa9941d9d36c85a07270291c0",
+      "scene_group": 60
+    },
+    {
+      "name": "00200.png",
+      "low": "Train/Low/00200.png",
+      "high": "Train/Normal/00200.png",
+      "low_sha256": "f34c3dc50ab9ceb005d7a37f38dafd42e15d3a2a1744c96cce18ae4fd3bff9aa",
+      "high_sha256": "ce92d182e8a36c117f386a702f726084795eafea4094aab632bb2c99e3617ea3",
+      "scene_group": 60
+    },
+    {
+      "name": "00201.png",
+      "low": "Train/Low/00201.png",
+      "high": "Train/Normal/00201.png",
+      "low_sha256": "2bd21c729378934ded85c97ae1fa9afe5448df7177d43ccb19dbbca5a00cebd1",
+      "high_sha256": "971f7be68d36b0022c9f6236f23d2f49180e94dbb1e3c0dcbd1f76014ee839d5",
+      "scene_group": 60
+    },
+    {
+      "name": "00233.png",
+      "low": "Train/Low/00233.png",
+      "high": "Train/Normal/00233.png",
+      "low_sha256": "88a06c3cb0c100105b4482a4a5efb7bc331354493ac76e0867e94bfb6b8557a4",
+      "high_sha256": "f1d517e5afaa7d0882029173f8af9021bd17b0b0dbfd55ed2a6b3f28ef2f52ed",
+      "scene_group": 72
+    },
+    {
+      "name": "00234.png",
+      "low": "Train/Low/00234.png",
+      "high": "Train/Normal/00234.png",
+      "low_sha256": "f03e9cf037bd3cc25a266dfbd7fa5c69637de9d81b2c8d64274807bd1d276595",
+      "high_sha256": "126bfe59ebcc1e2f06f6ccc1abd7855b6ceadf3bc9b6eed97aec4f9e4b305c39",
+      "scene_group": 72
+    },
+    {
+      "name": "00235.png",
+      "low": "Train/Low/00235.png",
+      "high": "Train/Normal/00235.png",
+      "low_sha256": "d85276535541435eb276188e59fa37fd3c38bf080806a9a65ffad5594f8b755c",
+      "high_sha256": "c931a07dc664991665ad42eef77e2ed6a932f947cdd2d63aeb5f784ed89e0a01",
+      "scene_group": 72
+    },
+    {
+      "name": "00251.png",
+      "low": "Train/Low/00251.png",
+      "high": "Train/Normal/00251.png",
+      "low_sha256": "5cfd4471b4b2f79afc3ddcd4b7f5b84c1d1a70ff2b90766df772875afec79d72",
+      "high_sha256": "318df5fd535344a1efd8c324213809c57e134cfb214cb1880637155513971627",
+      "scene_group": 78
+    },
+    {
+      "name": "00252.png",
+      "low": "Train/Low/00252.png",
+      "high": "Train/Normal/00252.png",
+      "low_sha256": "6abba31cc95887b2d35f1084fc5bcc960aa0ce0206608edbc36530e5e1df30f7",
+      "high_sha256": "6d3e558dff246ccd39a798da031d42c4b925863b28597f337cf0e59c76e399bf",
+      "scene_group": 78
+    },
+    {
+      "name": "00253.png",
+      "low": "Train/Low/00253.png",
+      "high": "Train/Normal/00253.png",
+      "low_sha256": "685e89883eb563790c9ad1730ac8815975c2034b87548ff781cfdbc803eff242",
+      "high_sha256": "fb87810aac38958b7964d87205c8a3328014aee19225dd04aabd6899554b29c5",
+      "scene_group": 78
+    },
+    {
+      "name": "00255.png",
+      "low": "Train/Low/00255.png",
+      "high": "Train/Normal/00255.png",
+      "low_sha256": "4b3832c4b0d930e41c319d163214fc41dd6d8a0489164e082b77ad5034758046",
+      "high_sha256": "72b104ad1d09977d57bb53a3f5d9e0bd67f3e5bbe1f96d509b0d192dd4219005",
+      "scene_group": 79
+    },
+    {
+      "name": "00256.png",
+      "low": "Train/Low/00256.png",
+      "high": "Train/Normal/00256.png",
+      "low_sha256": "94cd3cd1b936b8ec1462bb923b4fed2092e22f592fb3bdc01d628011dffa0ec5",
+      "high_sha256": "daa35564f54a22906cbb1ab7460e5506585e66ade0d66711635d90b46c8e656d",
+      "scene_group": 79
+    },
+    {
+      "name": "00257.png",
+      "low": "Train/Low/00257.png",
+      "high": "Train/Normal/00257.png",
+      "low_sha256": "0df63280a502eda5de849b2c6c51f20b6dcd7028a14f015fdc831530ea002925",
+      "high_sha256": "2a8f9a41de03a56563739d1061686bdd80c8992e8c3c54f9480148afaefe1e0e",
+      "scene_group": 79
+    },
+    {
+      "name": "00258.png",
+      "low": "Train/Low/00258.png",
+      "high": "Train/Normal/00258.png",
+      "low_sha256": "68677b12351df5a7c8637b588fae6e56e727a56b0f99ad52acf0f3f3ed762751",
+      "high_sha256": "b5431bd702713b9c04890748e668adb288d77938b200a22ba33adfd908d6b19c",
+      "scene_group": 79
+    },
+    {
+      "name": "00316.png",
+      "low": "Train/Low/00316.png",
+      "high": "Train/Normal/00316.png",
+      "low_sha256": "e3518e6e209907400f9eff27e40451938f3f40afb2d688343ccc5339043f9865",
+      "high_sha256": "005acd6ededc72f255ccb415daa27a4ba8dd3ea9e534537e6dd23c2e04a0fbc9",
+      "scene_group": 89
+    },
+    {
+      "name": "00317.png",
+      "low": "Train/Low/00317.png",
+      "high": "Train/Normal/00317.png",
+      "low_sha256": "e4d816d8f86313f149d3fef740c52c3749b157cf984e084e6fd11b6a6a9a6e99",
+      "high_sha256": "9e6a3a0d3523af6973d9155d13b165f44d230e2bb83d9e23207bfc56851045a4",
+      "scene_group": 89
+    },
+    {
+      "name": "00318.png",
+      "low": "Train/Low/00318.png",
+      "high": "Train/Normal/00318.png",
+      "low_sha256": "512028abf8a326e7ee4965732176030430a534502827f280955cd4f33c6af590",
+      "high_sha256": "427b2958791bda0dd11a4fcf4f51db9c183c55f8cad667f0caf13a7d1a45498e",
+      "scene_group": 89
+    },
+    {
+      "name": "00319.png",
+      "low": "Train/Low/00319.png",
+      "high": "Train/Normal/00319.png",
+      "low_sha256": "d9ff93501f6e3ca9b808bce890c8d6b0a1cf4e97388581137854f5892d6a1f45",
+      "high_sha256": "9e6a3a0d3523af6973d9155d13b165f44d230e2bb83d9e23207bfc56851045a4",
+      "scene_group": 89
+    },
+    {
+      "name": "00369.png",
+      "low": "Train/Low/00369.png",
+      "high": "Train/Normal/00369.png",
+      "low_sha256": "b0562662d01e9cdb363ab067e50aeca9c70c2c874b68f6289ab679d212edf59c",
+      "high_sha256": "12a6a0549a55cf2bdde34262a0091699c8aa585261452a06fd44d67f849e282b",
+      "scene_group": 99
+    },
+    {
+      "name": "00370.png",
+      "low": "Train/Low/00370.png",
+      "high": "Train/Normal/00370.png",
+      "low_sha256": "13de2ac061eea6ebd70a9925d2e957322d6ae1ee2781abd230eeaaca10cf3ba1",
+      "high_sha256": "a9b634128125ff4a8d0d0bede2322c4504e031f0ab8bc4c1ea14a5d5df0d83d9",
+      "scene_group": 99
+    },
+    {
+      "name": "00371.png",
+      "low": "Train/Low/00371.png",
+      "high": "Train/Normal/00371.png",
+      "low_sha256": "1aacdf561fe77613d62eae718210a59e4a0e62b810046f1c8297e27920524b66",
+      "high_sha256": "30b1f40ddb12fecbd6cc8dfe9a83f88afce7a2471223461ab6e110152a738b86",
+      "scene_group": 99
+    },
+    {
+      "name": "00384.png",
+      "low": "Train/Low/00384.png",
+      "high": "Train/Normal/00384.png",
+      "low_sha256": "2efc487434300014a768c6a693b027c04ef0a89bf6c6abba0db6f5e3ca52b659",
+      "high_sha256": "45e15e5495d6bcb9b0676530a972491d91028054eadc4e571215394400b3c9cf",
+      "scene_group": 103
+    },
+    {
+      "name": "00385.png",
+      "low": "Train/Low/00385.png",
+      "high": "Train/Normal/00385.png",
+      "low_sha256": "55b98e0499b152ee3014eab681d81a1c7b9fc02760a4260aa1891181c5185ae2",
+      "high_sha256": "0025ace5130aa5b52982d24266bfbe87db8160e25caabb0d2e2a425d48d4322d",
+      "scene_group": 103
+    },
+    {
+      "name": "00386.png",
+      "low": "Train/Low/00386.png",
+      "high": "Train/Normal/00386.png",
+      "low_sha256": "4fc595f1b5b1011ef6a4f6a78675141ca902c6935ddc809a6a8821b0ebc6e9f2",
+      "high_sha256": "88c298a02e529521d976e4be332e79a1029732b309b4bc144258009ed999b19d",
+      "scene_group": 103
+    },
+    {
+      "name": "00387.png",
+      "low": "Train/Low/00387.png",
+      "high": "Train/Normal/00387.png",
+      "low_sha256": "3b07be1cc30370253a184bded7f1ca8cbbbc041847664c9c4182c2063f616621",
+      "high_sha256": "d842763f93628effc17f16851f8547eb3da0bf6404219f6b98c6494a516062dc",
+      "scene_group": 103
+    },
+    {
+      "name": "00419.png",
+      "low": "Train/Low/00419.png",
+      "high": "Train/Normal/00419.png",
+      "low_sha256": "b08d0458523e1f93882ff68984d1c08b8c43d87584523fd54c51d4d469723831",
+      "high_sha256": "83e36c6d8afae9d5baab1675ebedb76a9eaf58a2277b1cd8483c76c2038282ba",
+      "scene_group": 111
+    },
+    {
+      "name": "00420.png",
+      "low": "Train/Low/00420.png",
+      "high": "Train/Normal/00420.png",
+      "low_sha256": "6f9b413c7f33ed9c3da5e23dd9f01d3f63d2da553fbf71db128ddf3ee8167157",
+      "high_sha256": "7bca1fd576f773fa2c7d479383e0376e8162bee29f3021679722c1d9b3b9f26c",
+      "scene_group": 111
+    },
+    {
+      "name": "00421.png",
+      "low": "Train/Low/00421.png",
+      "high": "Train/Normal/00421.png",
+      "low_sha256": "18d83ec10cd794e02978f16ce79bb098a37e45a693b06606f6ac5601500163c9",
+      "high_sha256": "27629c5e70fbe0968a48e62b53067ad28754ecd2d22b8594f2146fe93d29beb8",
+      "scene_group": 111
+    },
+    {
+      "name": "00422.png",
+      "low": "Train/Low/00422.png",
+      "high": "Train/Normal/00422.png",
+      "low_sha256": "09d5efb2bfebabbfa7ad73acf10aacb6f4c8c8bf3d11e6ce1e4506f105478459",
+      "high_sha256": "14223cc8de7e4c52c284702c9b9bab777b05d1d1de9d060eb0ba05045d31a182",
+      "scene_group": 111
+    },
+    {
+      "name": "00444.png",
+      "low": "Train/Low/00444.png",
+      "high": "Train/Normal/00444.png",
+      "low_sha256": "41429f38189bfcec4a37c3103b0a6a44108af7f01c949737277f201dceb39c06",
+      "high_sha256": "94c86eba59bd4cd7a3b483751c48bf84b498858e8649594ea0e974992df93453",
+      "scene_group": 119
+    },
+    {
+      "name": "00445.png",
+      "low": "Train/Low/00445.png",
+      "high": "Train/Normal/00445.png",
+      "low_sha256": "d4e9fd502338d9192508a9e1add1c704f75fd1e63258a9d8273b9e8f64e6498c",
+      "high_sha256": "4db406c48adb1a0dfd48fb360859e13e2fddd7d300e5aeb518fb3e886bac48cc",
+      "scene_group": 119
+    },
+    {
+      "name": "00446.png",
+      "low": "Train/Low/00446.png",
+      "high": "Train/Normal/00446.png",
+      "low_sha256": "673da0f229d52886008c4ff91805580d0dfabafa14a56ebca7a1dbe1a60eec03",
+      "high_sha256": "9bd05989f173feaf5a1c8eacf7d1764fce3b3c9f5ba9141dcb0f3235a00fde34",
+      "scene_group": 119
+    },
+    {
+      "name": "00470.png",
+      "low": "Train/Low/00470.png",
+      "high": "Train/Normal/00470.png",
+      "low_sha256": "62fa451a01041dd322eb5738e9352c951475082b32b3e504c97f0da7fb58205b",
+      "high_sha256": "804386bfd40ba238d20012f3e458602caa394b41c9d4b44b2b7b6100a2fe389b",
+      "scene_group": 209
+    },
+    {
+      "name": "00477.png",
+      "low": "Train/Low/00477.png",
+      "high": "Train/Normal/00477.png",
+      "low_sha256": "999a01f55ea87fb2637a7458f834490d8a528d15919485084c64003800e5f797",
+      "high_sha256": "5267aeaba6ca3f831db49944093357bfdcb2e4e632844fad1c763e982877bbed",
+      "scene_group": 216
+    },
+    {
+      "name": "00483.png",
+      "low": "Train/Low/00483.png",
+      "high": "Train/Normal/00483.png",
+      "low_sha256": "cf55a7f3bb36c7c6dc78676fc905b2c161a2d20a1808fd88ef5ebb0824bb53f4",
+      "high_sha256": "233532cdea9277ae6635f7f12fc3586d6d0e8d2543d1ebbb9e60aa6eaf76f162",
+      "scene_group": 220
+    },
+    {
+      "name": "00496.png",
+      "low": "Train/Low/00496.png",
+      "high": "Train/Normal/00496.png",
+      "low_sha256": "61dde9ae4b4268e75ade98e28e4b377d592d66d80e9260cc4b76986ae1747918",
+      "high_sha256": "73609e7b964a6e2ad1c3b5da6559a9a0bb425a4b9e4af5182e241649d3131620",
+      "scene_group": 229
+    },
+    {
+      "name": "00499.png",
+      "low": "Train/Low/00499.png",
+      "high": "Train/Normal/00499.png",
+      "low_sha256": "b2c56b91416f9d079f86e79999a8bb9c6dee275259f00cbd930684b96fa72db6",
+      "high_sha256": "649069ea202756aa0f45326a17db968fbe09cbc43b2a807f47eea94a4c0a68b4",
+      "scene_group": 232
+    },
+    {
+      "name": "00501.png",
+      "low": "Train/Low/00501.png",
+      "high": "Train/Normal/00501.png",
+      "low_sha256": "9cb1ddd7370da55a4e22b5ee9665ab99b57335cbec4066cf56b36d8372d52f21",
+      "high_sha256": "c188e1c7a2d394426f8a863ab4e1eae5273fd727e2d750bc934005ff0087d9c5",
+      "scene_group": 234
+    },
+    {
+      "name": "00526.png",
+      "low": "Train/Low/00526.png",
+      "high": "Train/Normal/00526.png",
+      "low_sha256": "9b416a0bf4544e1faf786a02dc114798b398139af6bc5a2f7e3619683325e540",
+      "high_sha256": "8ddac28372d990b811e8c76e12feb5215cb1e84581ce15ede68f1508bd5f537a",
+      "scene_group": 131
+    },
+    {
+      "name": "00527.png",
+      "low": "Train/Low/00527.png",
+      "high": "Train/Normal/00527.png",
+      "low_sha256": "4a8d562c1ad17a6a2ec7a6691c24c190b4b839f4751f0f45129778b6956f2f57",
+      "high_sha256": "e737128a3ff076941143b8efd0da000c623c3a950cc9b87dcee338f3f78227f5",
+      "scene_group": 131
+    },
+    {
+      "name": "00592.png",
+      "low": "Train/Low/00592.png",
+      "high": "Train/Normal/00592.png",
+      "low_sha256": "32a3aec3d457a40f300ee79a01b0d9b3b54568f1e908ed6ce36a890c0935ce32",
+      "high_sha256": "b80d02719469ccebb7607f729e8e47ebe8b4dfdd332ef3ea977327d513159f99",
+      "scene_group": 157
+    },
+    {
+      "name": "00593.png",
+      "low": "Train/Low/00593.png",
+      "high": "Train/Normal/00593.png",
+      "low_sha256": "d98fd457271f739901202824c74388c21fe4fe4bd51bf3afaa4c06d7defe019d",
+      "high_sha256": "b80d02719469ccebb7607f729e8e47ebe8b4dfdd332ef3ea977327d513159f99",
+      "scene_group": 157
+    },
+    {
+      "name": "00602.png",
+      "low": "Train/Low/00602.png",
+      "high": "Train/Normal/00602.png",
+      "low_sha256": "bc340251fdee513ea701156a046bc04f67b54294b545c728ce6f98e05bcca59b",
+      "high_sha256": "3681bbc0da7342e69309fd19f0f6097d6198a8e15348f33d44043307b4056df4",
+      "scene_group": 161
+    },
+    {
+      "name": "00603.png",
+      "low": "Train/Low/00603.png",
+      "high": "Train/Normal/00603.png",
+      "low_sha256": "d85de6b67663a13b8a118ff79201d2c446a7ea3cd043e9aa9c3c3253937be31f",
+      "high_sha256": "63d1fb10f4abe1ff21e05a292f619c092bec1d109acbb8da4e745e56b6f4ac67",
+      "scene_group": 161
+    },
+    {
+      "name": "00616.png",
+      "low": "Train/Low/00616.png",
+      "high": "Train/Normal/00616.png",
+      "low_sha256": "a17fe30d421b61bab479b0b3167c70208d2ef7f4f851525a523cc2f9557324f1",
+      "high_sha256": "01738389a33969750afff4e30205a78d6d881151882ef0a339d873e88000829c",
+      "scene_group": 168
+    },
+    {
+      "name": "00617.png",
+      "low": "Train/Low/00617.png",
+      "high": "Train/Normal/00617.png",
+      "low_sha256": "aac2887c885f2e52048adcd49c7ea16fca6f9784d22e75bcf544c3d5ebccdd72",
+      "high_sha256": "795a833060cb83028189aaa35715147c734805a40be85ba4da26b643ff5fc0a2",
+      "scene_group": 168
+    },
+    {
+      "name": "00620.png",
+      "low": "Train/Low/00620.png",
+      "high": "Train/Normal/00620.png",
+      "low_sha256": "5bde7e00b604803835c1becc35d0bf1ea988a93833517d333739abb352507632",
+      "high_sha256": "4c44a4602959f9045518e9eb10b50fbd1258cf07dbea996439052a4ade679aa9",
+      "scene_group": 170
+    },
+    {
+      "name": "00621.png",
+      "low": "Train/Low/00621.png",
+      "high": "Train/Normal/00621.png",
+      "low_sha256": "00399c9d7855a49937b564b352c80ecff7a445e64ecb71c2be7a826e9b91594f",
+      "high_sha256": "baa5f5288ee5597f5e766d745f58dbcbfce74be3699c9f540a6f8d04b208eeb1",
+      "scene_group": 170
+    },
+    {
+      "name": "00660.png",
+      "low": "Train/Low/00660.png",
+      "high": "Train/Normal/00660.png",
+      "low_sha256": "b6aaa56aaa71499817d5bdfde56eaf3ac2ebb157c0c327892c10e803efb7c5ee",
+      "high_sha256": "9f4d741d9b85e2deba47aef044ad8cd67a0ded6e78ca589b54ef698ab28f8798",
+      "scene_group": 184
+    },
+    {
+      "name": "00661.png",
+      "low": "Train/Low/00661.png",
+      "high": "Train/Normal/00661.png",
+      "low_sha256": "0432ba5f234f5d17d85b8472731e4ff3c0ed0383a78669f0871fc61348a048be",
+      "high_sha256": "9f4d741d9b85e2deba47aef044ad8cd67a0ded6e78ca589b54ef698ab28f8798",
+      "scene_group": 184
+    },
+    {
+      "name": "00676.png",
+      "low": "Train/Low/00676.png",
+      "high": "Train/Normal/00676.png",
+      "low_sha256": "9dad0cee0bfa954e0fce7915aa8b57b631fe1e637fe443d0e1ddabb6e8c41648",
+      "high_sha256": "c1f9641c38a0055c3f0dfb5436065cee215bfa95e2293704c4221ac7eba6bd2f",
+      "scene_group": 191
+    },
+    {
+      "name": "00677.png",
+      "low": "Train/Low/00677.png",
+      "high": "Train/Normal/00677.png",
+      "low_sha256": "5814fba60a8fc9cec08bb0edbe726685b8aa3434dba304f9e6482f1924af9100",
+      "high_sha256": "c1f9641c38a0055c3f0dfb5436065cee215bfa95e2293704c4221ac7eba6bd2f",
+      "scene_group": 191
+    }
+  ]
+}

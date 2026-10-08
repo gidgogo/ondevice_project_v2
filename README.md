@@ -13,22 +13,25 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 
 | 단계 | 내용 | 상태 |
 |---|---|---|
-| 1. 실험 기준 고정 | LOL-v2-real 점검·검증 분할, 평가 코드(PSNR·SSIM·LPIPS), CPU 시간 측정 규약 | 진행 예정 |
-| 2. 모델·교사 준비 | Mini·Max·Max+ 일반 학습, 고성능 교사 후보 검증 | 예정 |
+| 1. 실험 기준 고정 | LOL-v2-real 점검·검증 분할, 평가 코드(PSNR·SSIM·LPIPS), CPU 시간 측정 규약 | 완료 ([data](docs/data.md), [측정 규약](docs/measurement_protocol.md)) |
+| 2. 모델·교사 준비 | Mini·Max·Max+ 일반 학습, 고성능 교사 후보 검증 | 진행 중: 모델·학습·증류 코드 완료, CPU 예비 학습 중, [교사 후보](docs/teacher_candidates.md) 조사 |
 | 3. 증류와 선발 | 8개 구성 비교 → Mini*·Max*·Max+* | 예정 |
 | 4. 사진별 모델 선택 | 사진 상태별 결과 비교, 선택 기준 결정 | 예정 |
 | 5. 최종 시험·시제품 | 설정 고정 후 시험, 로컬 사진 보정 | 예정 |
 
-## 현재 저장소 구성
-
-LOL-v1 재현 저장소 [gidgogo/ultrafast-linet-baseline](https://github.com/gidgogo/ultrafast-linet-baseline) 커밋 `3ead18e`에서 재사용할 코드를 가져왔다. 아직 LOL-v1 기준으로 작성되어 있으며, 1단계에서 LOL-v2-real에 맞게 수정한다.
+## 저장소 구성
 
 | 경로 | 내용 |
 |---|---|
+| `scripts/models.py` | Mini(36) / Max(180) / Max+(937 = Max + 원본 해상도 보정망, 처음엔 Max와 같은 출력) |
+| `scripts/audit_lolv2.py`, `scripts/prepare_lolv2.py` | LOL-v2-real 점검, 장면 단위 검증 분할 |
+| `manifests/lolv2_real/` | 고정된 train 620 / validation 69 / test 100 목록 |
+| `scripts/train.py` | 일반 학습과 출력 기반 증류(`beta`, `teacher`) |
+| `scripts/evaluation.py` | PSNR·SSIM·LPIPS 평가(시험 분할은 명시적 허용 필요) |
+| `scripts/benchmark_cpu.py` | CPU 시간(model / end-to-end, 평균·p95)·메모리 측정 |
+| `docs/` | 데이터, 측정 규약, 교사 후보 |
 | `vendor/` | 공식 UltraFast-LiNET 구현(커밋 `12e8c79`, Apache-2.0). 해시는 `provenance.json`에 고정 |
-| `scripts/` | 데이터 분할(`prepare_data.py`), 학습(`train_a.py`), 평가(`evaluate.py`), 공개 가중치 재현·CPU 측정(`reproduce.py`) |
-| `tests/` | 재현성·평가·재개 테스트 |
-| `configs/baseline_a.json` | 기존 LOL-v1 Max 학습 설정 |
+| `scripts/*_a.py`, `prepare_data.py`, `evaluate.py`, `reproduce.py` | LOL-v1 재현 저장소 [gidgogo/ultrafast-linet-baseline](https://github.com/gidgogo/ultrafast-linet-baseline) `3ead18e`에서 가져온 기존 코드(LOL-v1 전용, 기록용) |
 | `weights/official_max.pkl` | 공식 공개 Max 가중치(LOL-v1) |
 
 LOL-v1 재현 결과(시험 PSNR 17.9173 dB / SSIM 0.527209)는 기존 저장소에 기록되어 있으며, 새 LOL-v2-real 결과와 직접 비교하지 않는다.
@@ -41,7 +44,20 @@ uv pip install --python .venv/bin/python -r requirements.lock.txt
 .venv/bin/python -m pytest -q
 ```
 
-데이터(`data/`)와 학습 결과(`runs/`)는 저장소에 올리지 않는다.
+```bash
+# 데이터: docs/data.md의 LOLv2.zip을 data/raw/에 풀기
+cd scripts
+../.venv/bin/python prepare_lolv2.py --data-root ../data/raw/LOLv2/Real_captured --output ../manifests/lolv2_real
+# 일반 학습
+../.venv/bin/python train.py --data-root ../data/raw/LOLv2/Real_captured --output ../runs/max_gt_s42 --set model='"max"'
+# 증류 (교사 = 학습된 Max+)
+../.venv/bin/python train.py --data-root ../data/raw/LOLv2/Real_captured --output ../runs/mini_basekd_s42 \
+  --set model='"mini"' beta=0.5 'teacher={"model":"maxplus","checkpoint":"../runs/maxplus_gt_s42/best.pt"}'
+# CPU 시간
+../.venv/bin/python benchmark_cpu.py --image ../data/raw/LOLv2/Real_captured/Train/Low/00011.png
+```
+
+GPU에서는 `--set device='"cuda"'`를 붙인다. 데이터(`data/`)와 학습 결과(`runs/`)는 저장소에 올리지 않는다.
 
 ## 팀
 
