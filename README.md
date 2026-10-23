@@ -18,7 +18,7 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 
 **기본 설정:** train 620 / validation 69, seed 42, 120 epoch, batch 40, **random crop 180×180**. 학습 예산은 공통 시작 설정이며 예비 실행에서 확인한다. 결과는 `gt_random_v1/`에 저장하고 이전 center 결과(`gt_v1/`)는 보존한다. **옛 Colab 사본은 자동 갱신되지 않으므로 위 링크에서 최신 사본을 열 것.** [팀 실행 안내](colab/README.md) · [저장·재개·증류 연결 안내](docs/colab.md) · [역할 분담](docs/team_roles.md)
 
-**끊어서 실행:** `EPOCHS_PER_SESSION = 10`으로 10 epoch씩 진행한다. 매 epoch Drive에 저장하며 같은 본 학습 셀을 다시 실행하면 다음 구간으로 이어진다. 총 `EPOCHS=120`·실험 이름을 바꾸지 않는다. 최신 checkpoint 읽기 실패 시 직전 백업으로 복구하고, 마지막 저장 이후 미완료 작업은 다시 계산한다.
+**기본은 끝까지 실행:** `EPOCHS_PER_SESSION = 120`으로 남은 학습을 진행하면서 매 epoch Drive에 저장한다. 짧게 점검할 때만 5~10으로 줄인다. 중단되면 같은 본 학습 셀을 다시 실행해 저장 지점부터 이어간다. 총 `EPOCHS=120`·실험 이름을 바꾸지 않는다. 최신 checkpoint 읽기 실패 시 직전 백업으로 복구하고, 마지막 저장 이후 미완료 작업은 다시 계산한다.
 
 ## 연구 질문
 

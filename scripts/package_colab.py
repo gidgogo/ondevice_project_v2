@@ -47,7 +47,7 @@ def notebook(model, digest):
                 EXPERIMENT = "gt_random_v1"
                 SEED = 42
                 EPOCHS = 120
-                EPOCHS_PER_SESSION = 10  # 한 번 클릭할 때 추가로 진행할 epoch. 총 EPOCHS는 유지.
+                EPOCHS_PER_SESSION = 120  # 기본: 남은 학습 끝까지. 짧게 점검할 때만 5~10으로 줄이세요.
                 BATCH_SIZE = 40
                 EXPECTED_CROP_MODE = "random"
                 BASE = Path("/content/drive/MyDrive/ondevice")
@@ -139,7 +139,7 @@ def notebook(model, digest):
                                "--set", *settings, "epochs=1"], check=True, cwd=REPO)
                 print("점검 성공. 본 학습은 새 초기 가중치에서 시작합니다.")
             '''),
-            cell("markdown", "## 4. 다음 10 epoch 실행 / 이어서 학습\n이 셀을 한 번 실행하면 EPOCHS_PER_SESSION만큼 추가 학습하고 멈춥니다. 같은 런타임에서는 이 셀만 다시 실행하면 다음 구간으로 이어집니다. 총 EPOCHS=120과 EXPERIMENT는 바꾸지 마세요. 매 epoch 종료 후 Drive에 저장하며, 끊겼을 때 진행 중이던 epoch는 다시 계산합니다. 새 런타임에서는 위의 준비 셀부터 다시 실행합니다. 첫 epoch 전에도 checkpoint를 저장하고, 최신 파일 손상 시 직전 저장본으로 복구합니다."),
+            cell("markdown", "## 4. 남은 학습 실행 / 이어서 학습\n기본값은 EPOCHS_PER_SESSION=120이며 전체 목표까지 남은 학습을 진행합니다. 짧은 실험이 필요할 때만 5~10으로 줄이세요. 줄인 경우 구간이 끝나면 직접 이 셀을 다시 실행해야 합니다. 총 EPOCHS=120과 EXPERIMENT는 바꾸지 마세요. 매 epoch 종료 후 Drive에 저장하며, 끊겼을 때 진행 중이던 epoch는 다시 계산합니다. 새 런타임에서는 위의 준비 셀부터 다시 실행합니다. 첫 epoch 전에도 checkpoint를 저장하고, 최신 파일 손상 시 직전 저장본으로 복구합니다."),
             cell("code", '''
                 assert isinstance(EPOCHS_PER_SESSION, int) and EPOCHS_PER_SESSION > 0
                 resumable = any((OUTPUT / name).exists() for name in ("last.pt", "last.prev.pt"))
