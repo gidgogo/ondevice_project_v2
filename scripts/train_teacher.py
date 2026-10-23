@@ -183,11 +183,15 @@ def main():
     target = args.pilot_iters if pilot else cfg["total_iters"]
     end = target if args.iters_per_session is None else min(target, start + args.iters_per_session)
 
-    def save(iteration):
+    def save_checkpoint(iteration):
         atomic_save({"weight": model.state_dict(), "optimizer": optimizer.state_dict(),
                      "scheduler": scheduler.state_dict(), "scaler": scaler.state_dict(), "iteration": iteration,
                      "best": best, "best_checkpoint": best_checkpoint, "history": history},
                     args.output / "last.pt", keep_previous=True)
+
+    def export(iteration):
+        """log.csv / best.pt / 이미지별 결과 / summary.json을 checkpoint 내용으로 다시 만든다.
+        checkpoint 저장 직후 끊겼어도 재개 시 이 함수가 빠진 파일을 복원한다."""
         with open(args.output / "log.csv.tmp", "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=FIELDS)
             writer.writeheader()
@@ -196,6 +200,9 @@ def main():
         if best_checkpoint is not None:
             atomic_save({k: v for k, v in best_checkpoint.items() if k != "per_image"}, args.output / "best.pt")
             atomic_json(args.output / "best_validation_per_image.json", best_checkpoint["per_image"])
+        else:
+            for name in ("best.pt", "best_validation_per_image.json"):
+                (args.output / name).unlink(missing_ok=True)
         summary = {"completed_iters": iteration, "target_iters": target,
                    "training_complete": iteration == target and not pilot, "pilot": pilot,
                    "best": best if best["iteration"] else None, "parameters": parameters,
@@ -203,7 +210,8 @@ def main():
         atomic_json(args.output / "summary.json", summary)
 
     if not args.resume:
-        save(0)
+        save_checkpoint(0)
+    export(start)  # 재개 시: checkpoint 기준으로 결과 파일·완료 기록 복원
     print(f"teacher={cfg['teacher']} params={parameters} start={start} session_end={end} target={target}", flush=True)
     pairs = load_split(args.manifests / "train.json", args.data_root, "train") if end > start else []
     model.train()
@@ -241,7 +249,8 @@ def main():
             history.append({"iteration": iteration, "loss": running / seen, "val_psnr": scores["psnr"],
                             "val_ssim": scores["ssim"], "lr": optimizer.param_groups[0]["lr"],
                             "train_seconds": round(train_seconds, 3), "val_seconds": round(val_seconds, 3)})
-            save(iteration)
+            save_checkpoint(iteration)
+            export(iteration)
             print(json.dumps(history[-1]), flush=True)
             running, seen, started = 0.0, 0, time.perf_counter()
     if pilot and iter_times:

@@ -97,3 +97,47 @@ def test_online_retinexformer_distillation_and_evaluation(tiny, tmp_path):
                               "--split", "test", "--output", str(tmp_path / "t.json")],
                              capture_output=True, text=True, cwd=ROOT / "scripts")
     assert refused.returncode != 0 and not (tmp_path / "t.json").exists()
+
+
+def test_teacher_restores_outputs_after_crash_following_checkpoint(tiny, tmp_path):
+    # 마지막 checkpoint 저장 직후, best.pt·로그·완료 기록을 쓰기 전에 끊긴 상황
+    data, manifests = tiny
+    out = tmp_path / "crash"
+    run(teacher_cmd(data, manifests, out))
+    expected_best = torch.load(out / "best.pt", map_location="cpu", weights_only=False)["weight"]
+    expected_log = (out / "log.csv").read_text()
+    for name in ("best.pt", "best_validation_per_image.json", "log.csv"):
+        (out / name).unlink()
+    stale = json.loads((out / "summary.json").read_text())
+    stale.update(completed_iters=2, training_complete=False, best=None)
+    (out / "summary.json").write_text(json.dumps(stale))
+    run(teacher_cmd(data, manifests, out, "--resume"))
+    restored = torch.load(out / "best.pt", map_location="cpu", weights_only=False)["weight"]
+    assert all(torch.equal(expected_best[k], restored[k]) for k in expected_best)
+    assert (out / "log.csv").read_text() == expected_log
+    assert (out / "best_validation_per_image.json").exists()
+    summary = json.loads((out / "summary.json").read_text())
+    assert summary["training_complete"] is True and summary["completed_iters"] == 4
+
+
+def _cell_names(source):
+    import ast
+    tree = ast.parse(source)
+    stored = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store)}
+    loaded = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
+    return stored, loaded
+
+
+@pytest.mark.parametrize("builder,plan", [("teacher_notebook", "teacher_plan"), ("kd_notebook", "kd_plan")])
+def test_run_cells_rebuild_commands_from_current_settings(builder, plan):
+    # 점검 셀에서 만든 명령·경로를 본 학습 셀이 재사용하면, 점검 뒤 바꾼 설정(TOTAL_ITERS, BETA 등)이 무시된다.
+    import package_colab
+    nb = getattr(package_colab, builder)("0" * 40)
+    code = [c["source"] for c in nb["cells"] if c["cell_type"] == "code"]
+    pilot, later = code[3], code[4:]
+    pilot_stored, _ = _cell_names(pilot)
+    for source in later:
+        stored, loaded = _cell_names(source)
+        assert f"{plan}()" in source
+        reused = (loaded - stored) & pilot_stored
+        assert not reused, f"run cell reuses names from the pilot cell: {reused}"

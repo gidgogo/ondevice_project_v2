@@ -68,3 +68,28 @@ def test_fit_refuses_non_validation_split(tmp_path):
                              "--cost", "mini=1", "max=2", "maxplus=3", "--selector-ms", "0",
                              "--output", str(tmp_path / "x")], capture_output=True, text=True)
     assert result.returncode != 0 and not (tmp_path / "x" / "rule.json").exists()
+
+
+def test_fit_rejects_image_missing_from_all_three_results(tmp_path):
+    make_split(tmp_path, "validation", [10, 20, 150, 160])
+    for m in ("mini", "max", "maxplus"):  # 세 결과 모두에서 같은 이미지 하나를 빼도 거부해야 한다
+        path = tmp_path / f"validation_{m}.json"
+        rows = json.loads(path.read_text())["per_image"]
+        path.write_text(json.dumps({"per_image": rows[1:]}))
+    result = subprocess.run([sys.executable, str(ROOT / "scripts/selector.py"), "fit", "--manifest",
+                             str(tmp_path / "validation.json"), "--data-root", str(tmp_path),
+                             *model_args(tmp_path, "validation"), "--cost", "mini=1", "max=2", "maxplus=3",
+                             "--selector-ms", "0", "--output", str(tmp_path / "x")], capture_output=True, text=True)
+    assert result.returncode != 0 and "missing" in result.stderr
+    assert not (tmp_path / "x" / "rule.json").exists()
+
+
+def test_fit_rejects_report_from_another_split(tmp_path):
+    make_split(tmp_path, "validation", [10, 20, 150, 160])
+    path = tmp_path / "validation_max.json"
+    path.write_text(json.dumps({"split": "test", **json.loads(path.read_text())}))
+    result = subprocess.run([sys.executable, str(ROOT / "scripts/selector.py"), "fit", "--manifest",
+                             str(tmp_path / "validation.json"), "--data-root", str(tmp_path),
+                             *model_args(tmp_path, "validation"), "--cost", "mini=1", "max=2", "maxplus=3",
+                             "--selector-ms", "0", "--output", str(tmp_path / "x")], capture_output=True, text=True)
+    assert result.returncode != 0 and "expected validation" in result.stderr

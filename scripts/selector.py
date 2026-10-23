@@ -48,10 +48,18 @@ def manifest_features(manifest, data_root):
     return meta["split"], {row["name"]: image_features(Path(data_root) / row["low"]) for row in meta["pairs"]}
 
 
-def load_results(path):
+def load_results(path, split=None):
     """eval_checkpoint.py 보고서 또는 train.py의 best_validation_per_image.json."""
     data = json.loads(Path(path).read_text())
-    rows = data["per_image"] if isinstance(data, dict) else data
+    if isinstance(data, dict):
+        if split is not None and data.get("split") not in (None, split):
+            raise SystemExit(f"{path} is a {data.get('split')} report, expected {split}")
+        rows = data["per_image"]
+    else:
+        rows = data
+    names = [row["name"] for row in rows]
+    if len(names) != len(set(names)):
+        raise SystemExit(f"Duplicate image names in {path}")
     return {row["name"]: row for row in rows}
 
 
@@ -94,13 +102,14 @@ def evaluate_rule(names, feats, results, costs, feature, t1, t2, reverse, select
 
 
 def common_names(feats, results):
-    names = sorted(set(feats).intersection(*(set(r) for r in results.values())))
-    if not names:
-        raise SystemExit("No image appears in both the features and all three result files")
+    """manifest의 모든 이미지가 세 결과 파일에 빠짐없이(추가 이미지 없이) 있어야 한다."""
+    expected = set(feats)
     for m in MODELS:
-        if set(results[m]) != set(names):
-            raise SystemExit(f"Result file for {m} does not cover the same images ({len(results[m])} vs {len(names)})")
-    return names
+        missing, extra = expected - set(results[m]), set(results[m]) - expected
+        if missing or extra:
+            raise SystemExit(f"Result file for {m} does not match the manifest: "
+                             f"{len(missing)} missing (e.g. {sorted(missing)[:3]}), {len(extra)} extra (e.g. {sorted(extra)[:3]})")
+    return sorted(expected)
 
 
 def fixed_points(names, results, costs):
@@ -122,7 +131,7 @@ def cmd_fit(args):
     split, feats = manifest_features(args.manifest, args.data_root)
     if split != "validation" and not args.allow_non_validation:
         raise SystemExit("Fit the rule on the validation split (use --allow-non-validation only for tests)")
-    results = {m: load_results(getattr(args, m)) for m in MODELS}
+    results = {m: load_results(getattr(args, m), split) for m in MODELS}
     costs = load_costs(args)
     names = common_names(feats, results)
     values = np.array([feats[n][args.feature] for n in names])
@@ -169,7 +178,7 @@ def cmd_apply(args):
     if not rule.get("chosen"):
         raise SystemExit("The rule file has no chosen rule")
     split, feats = manifest_features(args.manifest, args.data_root)
-    results = {m: load_results(getattr(args, m)) for m in MODELS}
+    results = {m: load_results(getattr(args, m), split) for m in MODELS}
     names = common_names(feats, results)
     costs = rule["costs_ms"] if not (args.latency or args.cost) else load_costs(args)
     c = rule["chosen"]
