@@ -34,9 +34,9 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 | 단계 | 내용 | 상태 |
 |---|---|---|
 | 1. 실험 기준 고정 | LOL-v2-real 점검·검증 분할, 평가 코드(PSNR·SSIM·LPIPS), CPU 시간 측정 규약 | 완료 ([data](docs/data.md), [측정 규약](docs/measurement_protocol.md)) |
-| 2. 모델·교사 준비 | Mini·Max·Max+ 일반 학습, 고성능 교사 후보 검증 | 모델·학습·증류 코드 및 Colab 실행 파일 준비. [교사 후보](docs/teacher_candidates.md) 조사 단계 |
-| 3. 증류와 선발 | 8개 구성 비교 → Mini*·Max*·Max+* | 예정 |
-| 4. 사진별 모델 선택 | 사진 상태별 결과 비교, 선택 기준 결정 | 예정 |
+| 2. 모델·교사 준비 | Mini·Max·Max+ 일반 학습, 고성능 교사(Retinexformer) 학습 | 일반 학습 노트북 3개, [교사 학습 노트북](colab/04_teacher/) 준비. 교사는 [Retinexformer로 선정](docs/teacher_candidates.md) |
+| 3. 증류와 선발 | 8개 구성 비교 → Mini*·Max*·Max+* | [증류 노트북](colab/05_kd/)·이미지별 평가 스크립트 준비, 실행 예정 ([2단계 안내](docs/stage2.md)) |
+| 4. 사진별 모델 선택 | 사진 상태별 결과 비교, 선택 기준 결정 | 규칙 기반 선택기 `scripts/selector.py` 준비, 학습 결과 대기 |
 | 5. 최종 시험·시제품 | 설정 고정 후 시험, 로컬 사진 보정 | 예정 |
 
 ## 저장소 구성
@@ -49,6 +49,10 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 | `scripts/audit_lolv2.py`, `scripts/prepare_lolv2.py` | LOL-v2-real 점검, 장면 단위 검증 분할 |
 | `manifests/lolv2_real/` | 고정된 train 620 / validation 69 / test 100 목록 |
 | `scripts/train.py` | 일반 학습과 출력 기반 증류(`beta`, `teacher`) |
+| `scripts/teacher_models.py`, `scripts/train_teacher.py`, `configs/teacher_retinexformer.json` | 고성능 교사 Retinexformer(1,605,701개) 구조·학습. 구조 파일은 `vendor_retinexformer/`(MIT, 해시 고정) |
+| `scripts/eval_checkpoint.py` | 학생·교사 checkpoint의 이미지별 PSNR·SSIM(·LPIPS) 평가. 시험은 `--allow-test` 명시 |
+| `scripts/selector.py` | 규칙 기반 모델 선택기: 밝기 특징, 검증으로 임계값 고정, 무작위 선택 대비 이득, 시험 적용 |
+| `colab/04_teacher`, `colab/05_kd` | 교사 학습·증류 실행 노트북 ([2단계 안내](docs/stage2.md)) |
 | `scripts/evaluation.py` | PSNR·SSIM·LPIPS 평가(시험 분할은 명시적 허용 필요) |
 | `scripts/benchmark_cpu.py` | CPU 시간(model / end-to-end, 평균·p95)·메모리 측정 |
 | `docs/` | 실행 계획표, 역할 분담, 설계 결정, 데이터, 측정 규약, 교사 후보 |

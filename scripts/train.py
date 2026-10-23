@@ -29,6 +29,7 @@ from torchvision.transforms import functional as TF
 from common import ROOT, UltraFastLiNETLoss, environment, sha256, tensor_image, write_json
 from evaluation import evaluate
 from models import build_model, count_parameters
+from teacher_models import build_teacher, is_teacher
 
 DEFAULTS = {
     "model": "max", "seed": 42, "epochs": 120, "batch_size": 40, "crop": 180, "crop_mode": "center",
@@ -71,12 +72,16 @@ class PairCrops(Dataset):
 
 
 def load_teacher(spec, device):
-    """spec: {"model": name, "checkpoint": path} or {"outputs_dir": path} or None."""
+    """spec: {"model": name, "checkpoint": path} or {"outputs_dir": path} or None.
+
+    name is a student model (e.g. the GT-trained Max+) or an external teacher such as
+    "retinexformer"; either runs online on the same crop the student sees.
+    """
     if not spec:
         return None, None
     if "outputs_dir" in spec:
         return None, Path(spec["outputs_dir"])
-    teacher = build_model(spec["model"])
+    teacher = build_teacher(spec["model"]) if is_teacher(spec["model"]) else build_model(spec["model"])
     checkpoint = torch.load(spec["checkpoint"], map_location="cpu", weights_only=True)
     teacher.load_state_dict(checkpoint.get("weight", checkpoint), strict=True)
     for parameter in teacher.parameters():
@@ -210,10 +215,13 @@ def main():
     metadata = {"config": cfg, "pilot": pilot, "parameters": count_parameters(model),
                 "max_train_batches": args.max_train_batches,
                 "initial_checkpoint_source_sha256": sha256(args.init_checkpoint) if args.init_checkpoint else None,
+                "teacher_checkpoint_sha256": (sha256(cfg["teacher"]["checkpoint"])
+                                              if cfg["teacher"] and "checkpoint" in cfg["teacher"] else None),
                 "gpu": torch.cuda.get_device_name(device) if device.type == "cuda" else None,
                 "environment": environment(), "device": str(device),
                 "manifests_sha256": {s: sha256(args.manifests / f"{s}.json") for s in ("train", "validation")},
-                "source_sha256": {n: sha256(ROOT / "scripts" / n) for n in ("train.py", "models.py", "evaluation.py", "common.py")},
+                "source_sha256": {n: sha256(ROOT / "scripts" / n)
+                                  for n in ("train.py", "models.py", "teacher_models.py", "evaluation.py", "common.py")},
                 "selection": "max mean validation PSNR; ties keep the earlier epoch", "official_test_used": False}
     start_epoch, best = 0, {"psnr": -math.inf, "epoch": 0}
     history, best_checkpoint = [], None
@@ -226,6 +234,8 @@ def main():
             raise ValueError("Cannot mix pilot and full training when resuming")
         if previous["manifests_sha256"] != metadata["manifests_sha256"]:
             raise ValueError("Cannot resume with different data manifests")
+        if previous.get("teacher_checkpoint_sha256") != metadata["teacher_checkpoint_sha256"]:
+            raise ValueError("Cannot resume with a different teacher checkpoint")
         checkpoint = load_resume_checkpoint(args.output)
         model.load_state_dict(checkpoint["weight"])
         optimizer.load_state_dict(checkpoint["optimizer"])

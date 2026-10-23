@@ -1,0 +1,14 @@
+{
+  "teacher": "retinexformer",
+  "seed": 42,
+  "total_iters": 30000,
+  "batch_size": 8,
+  "crop": 256,
+  "lr": 0.0002,
+  "eta_min": 1e-06,
+  "grad_clip": 0.01,
+  "geometric_augs": true,
+  "val_every": 1000,
+  "device": "cuda",
+  "amp": false
+}

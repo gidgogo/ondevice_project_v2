@@ -221,12 +221,243 @@ def write_notebook(nb, path, model):
     path.write_text(json.dumps(nb, ensure_ascii=False, indent=2) + "\n")
 
 
+SETUP_STAGE2 = """
+from google.colab import drive
+drive.mount("/content/drive")
+import hashlib, json, os, shutil, subprocess, sys, uuid, zipfile
+import torch
+assert torch.cuda.is_available(), "GPU 런타임을 선택한 뒤 다시 실행하세요."
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+
+def file_hash(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+def extract_checked(archive, destination):
+    destination.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(archive) as z:
+        for name in z.namelist():
+            if not (destination / name).resolve().is_relative_to(destination.resolve()):
+                raise ValueError(f"잘못된 ZIP 경로: {name}")
+        z.extractall(destination)
+
+WORK = Path("/content/linet_gt")
+WORK.mkdir(parents=True, exist_ok=True)
+REPO = WORK / f"source_{CODE_REF[:12]}"
+if not REPO.exists():
+    subprocess.run(["git", "clone", "--no-checkout",
+                    "https://github.com/gidgogo/ondevice_project_v2.git", str(REPO)], check=True)
+    subprocess.run(["git", "-C", str(REPO), "checkout", "--detach", CODE_REF], check=True)
+actual = subprocess.check_output(["git", "-C", str(REPO), "rev-parse", "HEAD"], text=True).strip()
+assert actual == CODE_REF, "코드 버전이 다릅니다. 새 런타임에서 다시 시작하세요."
+subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-r",
+                str(REPO / "requirements-colab.txt")], check=True)
+sys.path.insert(0, str(REPO / "scripts"))
+print("실행 코드:", actual)
+print("GPU:", torch.cuda.get_device_name(0), "PyTorch:", torch.__version__)
+"""
+
+
+def _data_cell():
+    # GT 노트북과 같은 데이터 준비·해시 검사 셀을 그대로 사용한다.
+    return notebook("max", "")["cells"][5]["source"]
+
+
+def _stage2_notebook(name, title, intro, settings, ref, extra_setup, steps):
+    if not re.fullmatch(r"[0-9a-f]{40}", ref):
+        raise ValueError("--github-ref must be a full 40-character commit SHA")
+    cells = [cell("markdown", f"# {title}\n" + textwrap.dedent(intro).strip()
+                  + f"\n\n실행 코드는 GitHub 커밋 `{ref}`로 고정됩니다.\n"),
+             cell("code", textwrap.dedent(settings).strip() + f"\nCODE_REF = {ref!r}\n"),
+             cell("markdown", "## 1. Drive 연결 및 실행 환경 준비"),
+             cell("code", SETUP_STAGE2.strip() + "\n" + textwrap.dedent(extra_setup).strip() + "\n"),
+             cell("markdown", "## 2. 데이터 준비\n학습 620쌍·검증 69쌍의 파일 해시를 확인합니다. 시험 이미지는 읽지 않습니다."),
+             cell("code", _data_cell())]
+    for heading, code in steps:
+        cells += [cell("markdown", heading), cell("code", code)]
+    return {"nbformat": 4, "nbformat_minor": 5,
+            "metadata": {"accelerator": "GPU", "colab": {"name": f"{name}.ipynb"},
+                         "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}},
+            "cells": cells}
+
+
+def teacher_notebook(ref):
+    return _stage2_notebook("train_teacher_retinexformer", "고성능 교사 학습 · Retinexformer · LOL-v2-real", """
+        **런타임 → 런타임 유형 변경 → GPU** 선택 후 위에서 아래로 실행하세요.
+        학생 증류에 쓸 고성능 교사(Retinexformer, 학습 파라미터 1,605,701개)를 **우리 학습 620쌍으로 처음부터** 학습합니다.
+        공개 사전학습 가중치는 쓰지 않습니다(우리 검증 분할이 포함된 데이터로 학습되었을 수 있음).
+
+        1. 짧은 점검이 반복당 시간과 **TOTAL_ITERS 전체의 예상 시간**을 출력합니다.
+        2. 예상 시간을 보고 TOTAL_ITERS를 정한 뒤 본 학습을 시작합니다. 시작 후 바꾸려면 EXPERIMENT도 새 이름으로 바꿉니다.
+        3. 끝나면 검증 69장 점수를 Max+ 일반 학습 결과와 비교합니다. **Max+보다 확실히 좋아야** 고성능 교사로 씁니다.
+    """, """
+        from pathlib import Path
+        TEACHER = "retinexformer"
+        EXPERIMENT = "teacher_v1"
+        SEED = 42
+        TOTAL_ITERS = 30000  # 점검 결과의 예상 시간을 보고 본 학습 전에 확정
+        ITERS_PER_SESSION = TOTAL_ITERS  # 기본: 끝까지. 짧게 나눌 때만 줄이세요(1000 단위 저장).
+        PILOT_ITERS = 100
+        BASE = Path("/content/drive/MyDrive/ondevice")
+        DATA_ZIP = BASE / "LOLv2.zip"
+        OUTPUT = BASE / "teachers" / EXPERIMENT / f"{TEACHER}_s{SEED}"
+        MAXPLUS_GT_SUMMARY = BASE / "runs" / "gt_random_v1" / "maxplus_gt_s42" / "summary.json"
+    """, ref, """
+        CONFIG = REPO / "configs/teacher_retinexformer.json"
+        from teacher_models import build_teacher
+        print("교사 파라미터:", sum(p.numel() for p in build_teacher(TEACHER).parameters()))
+        print("설정:", json.loads(CONFIG.read_text()))
+        print("저장 위치:", OUTPUT)
+    """, [
+        ("## 3. 짧은 실행 점검과 예상 시간\nPILOT_ITERS만 학습하고 검증 69장을 한 번 실행합니다. 결과는 pilots 폴더에 따로 저장합니다.", """
+            common = [sys.executable, "-u", str(REPO / "scripts/train_teacher.py"),
+                      "--data-root", str(DATA_ROOT), "--manifests", str(MANIFESTS), "--config", str(CONFIG)]
+            settings = [f"teacher={json.dumps(TEACHER)}", f"seed={SEED}", f"total_iters={TOTAL_ITERS}"]
+            PILOT = BASE / "pilots" / EXPERIMENT / f"{TEACHER}_{uuid.uuid4().hex[:8]}"
+            subprocess.run(common + ["--output", str(PILOT), "--pilot-iters", str(PILOT_ITERS), "--set", *settings],
+                           check=True, cwd=REPO / "scripts")
+            timing = json.loads((PILOT / "pilot_timing.json").read_text())
+            print(f"반복당 {timing['seconds_per_iter']:.3f}초 · TOTAL_ITERS={TOTAL_ITERS} 예상 {timing['estimated_hours_for_total_iters']:.1f}시간 ({timing['gpu']})")
+        """),
+        ("## 4. 본 학습 / 이어서 학습\n1000회마다 검증·저장합니다. 끊기면 준비 셀부터 다시 실행하고 이 셀을 실행하면 마지막 저장 지점부터 이어갑니다.", """
+            resumable = any((OUTPUT / name).exists() for name in ("last.pt", "last.prev.pt"))
+            if OUTPUT.exists() and any(OUTPUT.iterdir()) and not resumable:
+                raise RuntimeError("복구할 checkpoint가 없습니다. EXPERIMENT를 새 이름으로 바꾸세요.")
+            effective = json.loads(CONFIG.read_text())
+            effective.update(teacher=TEACHER, seed=SEED, total_iters=TOTAL_ITERS)
+            if (OUTPUT / "run.json").exists():
+                assert json.loads((OUTPUT / "run.json").read_text())["config"] == effective, "기존 실험과 설정이 다릅니다. 새 EXPERIMENT 이름을 사용하세요."
+            cmd = common + ["--output", str(OUTPUT), "--iters-per-session", str(ITERS_PER_SESSION)]
+            if resumable:
+                cmd += ["--resume"]
+            subprocess.run(cmd + ["--set", *settings], check=True, cwd=REPO / "scripts")
+            summary = json.loads((OUTPUT / "summary.json").read_text())
+            print(f"저장 완료: {summary['completed_iters']}/{summary['target_iters']} · 최고 검증 {summary['best']}")
+        """),
+        ("## 5. 검증 69장 평가와 Max+ 일반 학습 비교\n고성능 교사로 쓰려면 검증 PSNR이 Max+ 일반 학습보다 확실히 높아야 합니다. 시험 분할은 평가하지 않습니다.", """
+            REPORT = OUTPUT / "validation_report.json"
+            subprocess.run([sys.executable, str(REPO / "scripts/eval_checkpoint.py"), "--model", TEACHER,
+                            "--checkpoint", str(OUTPUT / "best.pt"), "--data-root", str(DATA_ROOT),
+                            "--manifests", str(MANIFESTS), "--device", "cuda", "--output", str(REPORT)],
+                           check=True, cwd=REPO / "scripts")
+            teacher = json.loads(REPORT.read_text())["mean"]
+            print("교사 검증:", teacher)
+            if MAXPLUS_GT_SUMMARY.exists():
+                maxplus = json.loads(MAXPLUS_GT_SUMMARY.read_text())["best"]
+                print(f"교사 - Max+ 일반 학습: PSNR {teacher['psnr'] - maxplus['psnr']:+.2f} dB, SSIM {teacher['ssim'] - maxplus['ssim']:+.4f}")
+            else:
+                print("Max+ 일반 학습 결과가 이 Drive에 없습니다. summary.json을 받아 MAXPLUS_GT_SUMMARY 경로에 두세요.")
+            print("증류에 쓸 교사 checkpoint:", OUTPUT / "best.pt")
+        """),
+    ])
+
+
+def kd_notebook(ref):
+    return _stage2_notebook("train_kd", "지식 증류 학습 · 학생 1개 × 교사 1개 · LOL-v2-real", """
+        **런타임 → 런타임 유형 변경 → GPU** 선택 후 위에서 아래로 실행하세요.
+        같은 학생 구조를 **일반 학습과 같은 initial.pt, 같은 설정·epoch**로 시작하고, 손실에만 교사 출력 항(β)을 더합니다.
+
+        | TEACHER_KIND | 교사 | 가능한 학생 |
+        |---|---|---|
+        | `base` | 일반 학습 Max+ (`gt_random_v1/maxplus_gt_s42/best.pt`) | mini, max |
+        | `strong` | Retinexformer (`teachers/teacher_v1/retinexformer_s42/best.pt`) | mini, max, maxplus |
+
+        준비물(이 노트북을 실행하는 사람의 Drive 기준 경로): 학생의 일반 학습 폴더(`initial.pt`, `run.json`, `summary.json`)와 교사 `best.pt`.
+        다른 팀원이 학습했다면 같은 경로로 복사해 둡니다. 교사는 학생과 **같은 random 패치**에서 매 배치 계산합니다.
+        β 후보는 0.1 / 0.3 / 1.0이며 검증으로 고르고, 고른 뒤에는 고정합니다.
+    """, """
+        from pathlib import Path
+        STUDENT = "mini"        # mini / max / maxplus
+        TEACHER_KIND = "base"   # base: Max+ 일반 학습 / strong: Retinexformer
+        BETA = 0.3              # 후보 0.1 / 0.3 / 1.0
+        SEED = 42
+        EPOCHS = 120
+        EPOCHS_PER_SESSION = 120
+        BATCH_SIZE = 40
+        GT_EXPERIMENT = "gt_random_v1"
+        TEACHER_EXPERIMENT = "teacher_v1"
+        EXPERIMENT = "kd_random_v1"
+        BASE = Path("/content/drive/MyDrive/ondevice")
+        DATA_ZIP = BASE / "LOLv2.zip"
+        GT_RUN = BASE / "runs" / GT_EXPERIMENT / f"{STUDENT}_gt_s{SEED}"
+        TEACHERS = {"base": ("maxplus", BASE / "runs" / GT_EXPERIMENT / "maxplus_gt_s42" / "best.pt"),
+                    "strong": ("retinexformer", BASE / "teachers" / TEACHER_EXPERIMENT / "retinexformer_s42" / "best.pt")}
+        OUTPUT = BASE / "runs" / EXPERIMENT / f"{STUDENT}_{TEACHER_KIND}kd_b{BETA}_s{SEED}"
+    """, ref, """
+        assert STUDENT in ("mini", "max", "maxplus") and TEACHER_KIND in TEACHERS
+        assert not (STUDENT == "maxplus" and TEACHER_KIND == "base"), "Max+는 자기 자신(Max+ 일반 학습)을 교사로 쓰지 않습니다."
+        assert BETA > 0
+        TEACHER_MODEL, TEACHER_CKPT = TEACHERS[TEACHER_KIND]
+        INITIAL = GT_RUN / "initial.pt"
+        for path in (INITIAL, GT_RUN / "run.json", TEACHER_CKPT):
+            assert path.is_file(), f"준비 파일이 없습니다: {path}"
+        CONFIG = REPO / "configs/colab_gt.json"
+        base_config = json.loads(CONFIG.read_text())
+        base_config.update(model=STUDENT, seed=SEED, epochs=EPOCHS, batch_size=BATCH_SIZE)
+        gt_config = json.loads((GT_RUN / "run.json").read_text())["config"]
+        assert gt_config == base_config, f"일반 학습과 설정이 다릅니다. 같은 조건으로 비교해야 합니다.\\nGT: {gt_config}\\n지금: {base_config}"
+        TEACHER_SPEC = {"model": TEACHER_MODEL, "checkpoint": str(TEACHER_CKPT)}
+        print("학생:", STUDENT, "· 교사:", TEACHER_KIND, TEACHER_MODEL, "· β:", BETA)
+        print("일반 학습 초기값:", INITIAL, file_hash(INITIAL)[:12])
+        print("교사:", TEACHER_CKPT, file_hash(TEACHER_CKPT)[:12])
+        print("저장 위치:", OUTPUT)
+    """, [
+        ("## 3. 짧은 실행 점검\n2배치 학습 + 검증 69장. 교사 추론이 포함된 시간을 확인합니다.", """
+            common = [sys.executable, "-u", str(REPO / "scripts/train.py"),
+                      "--data-root", str(DATA_ROOT), "--manifests", str(MANIFESTS), "--config", str(CONFIG)]
+            settings = [f"model={json.dumps(STUDENT)}", f"seed={SEED}", f"batch_size={BATCH_SIZE}",
+                        f"beta={BETA}", f"teacher={json.dumps(TEACHER_SPEC)}"]
+            PILOT = BASE / "pilots" / EXPERIMENT / f"{STUDENT}_{TEACHER_KIND}_{uuid.uuid4().hex[:8]}"
+            subprocess.run(common + ["--output", str(PILOT), "--max-train-batches", "2", "--init-checkpoint", str(INITIAL),
+                                     "--set", *settings, "epochs=1"], check=True, cwd=REPO)
+            print("점검 성공")
+        """),
+        ("## 4. 본 학습 / 이어서 학습\n처음에는 일반 학습의 initial.pt에서 시작하고, 이후에는 마지막 저장 epoch에서 이어갑니다.", """
+            resumable = any((OUTPUT / name).exists() for name in ("last.pt", "last.prev.pt"))
+            if OUTPUT.exists() and any(OUTPUT.iterdir()) and not resumable:
+                raise RuntimeError("복구할 checkpoint가 없습니다. EXPERIMENT를 새 이름으로 바꾸세요.")
+            effective = dict(base_config, beta=BETA, teacher=TEACHER_SPEC)
+            if (OUTPUT / "run.json").exists():
+                assert json.loads((OUTPUT / "run.json").read_text())["config"] == effective, "기존 실험과 설정이 다릅니다. 새 EXPERIMENT 이름을 사용하세요."
+            cmd = common + ["--output", str(OUTPUT), "--epochs-per-session", str(EPOCHS_PER_SESSION)]
+            cmd += ["--resume"] if resumable else ["--init-checkpoint", str(INITIAL)]
+            subprocess.run(cmd + ["--set", *settings, f"epochs={EPOCHS}"], check=True, cwd=REPO)
+            progress = json.loads((OUTPUT / "progress.json").read_text())
+            print(f"저장 완료: {progress['completed_epochs']}/{progress['target_epochs']} epoch")
+        """),
+        ("## 5. 일반 학습과 비교 (검증 69장)\n같은 학생·같은 초기값·같은 epoch에서 증류만 다릅니다. 시험 분할은 쓰지 않습니다.", """
+            kd = json.loads((OUTPUT / "summary.json").read_text())
+            print("증류:", kd["best"])
+            gt_summary = GT_RUN / "summary.json"
+            if gt_summary.exists() and json.loads(gt_summary.read_text()).get("training_complete"):
+                gt = json.loads(gt_summary.read_text())["best"]
+                print("일반 학습:", gt)
+                if kd.get("training_complete"):
+                    print(f"증류 - 일반 학습: PSNR {kd['best']['psnr'] - gt['psnr']:+.3f} dB, SSIM {kd['best']['ssim'] - gt['ssim']:+.4f}")
+            else:
+                print("일반 학습이 아직 완료되지 않았거나 summary.json이 없습니다.")
+        """),
+    ])
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--github-ref", help="Emit model folders using this fixed GitHub commit instead of a code ZIP")
+    p.add_argument("--stage", choices=["gt", "kd"], default="gt",
+                   help="gt: 일반 학습 노트북 3개 / kd: 교사 학습·증류 노트북 2개 (GitHub 커밋 고정 전용)")
     args = p.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
+    if args.stage == "kd":
+        if not args.github_ref:
+            p.error("--stage kd requires --github-ref")
+        write_notebook(teacher_notebook(args.github_ref), args.output / "04_teacher" / "train.ipynb", "teacher")
+        write_notebook(kd_notebook(args.github_ref), args.output / "05_kd" / "train.ipynb", "kd")
+        print(args.output)
+        return
     if args.github_ref:
         for index, model in enumerate(("mini", "max", "maxplus"), 1):
             write_notebook(github_notebook(model, args.github_ref),
@@ -235,7 +466,7 @@ def main():
         return
     archive = args.output / "colab_code.zip"
     files = [ROOT / name for name in ("README.md", "LICENSE", "provenance.json", "requirements-colab.txt")]
-    for folder in ("scripts", "vendor", "configs", "manifests", "docs", "tests"):
+    for folder in ("scripts", "vendor", "vendor_retinexformer", "configs", "manifests", "docs", "tests"):
         files.extend(p for p in (ROOT / folder).rglob("*") if p.is_file()
                      and "__pycache__" not in p.parts and p.suffix != ".pyc" and p.name != ".DS_Store")
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as z:

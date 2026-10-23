@@ -6,6 +6,15 @@
 | Max 담당 | Max, 180 parameters | [02_max/train.ipynb](02_max/train.ipynb) | [열기](https://colab.research.google.com/github/gidgogo/ondevice_project_v2/blob/main/colab/02_max/train.ipynb) |
 | Max+ 담당 | Max + 원본 해상도 보정망, 937 parameters | [03_maxplus/train.ipynb](03_maxplus/train.ipynb) | [열기](https://colab.research.google.com/github/gidgogo/ondevice_project_v2/blob/main/colab/03_maxplus/train.ipynb) |
 
+## 2단계: 교사 학습 · 증류
+
+| 작업 | 노트북 | Colab | 시작 조건 |
+|---|---|---|---|
+| 고성능 교사 Retinexformer 학습 | [04_teacher/train.ipynb](04_teacher/train.ipynb) | [열기](https://colab.research.google.com/github/gidgogo/ondevice_project_v2/blob/main/colab/04_teacher/train.ipynb) | 데이터만 있으면 일반 학습과 병행 가능 |
+| 증류 (학생·교사·β 선택) | [05_kd/train.ipynb](05_kd/train.ipynb) | [열기](https://colab.research.google.com/github/gidgogo/ondevice_project_v2/blob/main/colab/05_kd/train.ipynb) | 학생의 일반 학습 `initial.pt` + 교사 `best.pt` |
+
+자세한 순서·결과 경로: [2단계 안내](../docs/stage2.md)
+
 ## 실행 순서
 
 1. 팀에서 사용한 `LOLv2.zip`을 각자의 Drive `내 드라이브/ondevice/`에 준비한다. 공유 폴더를 사용하면 노트북의 DATA_ZIP 경로를 해당 파일로 바꾼다. [데이터 설명](../docs/data.md)

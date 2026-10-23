@@ -15,5 +15,15 @@
     "vendor/train.py": "b64064dff6db97796748f65a7081098116ff4bed400addbbcadb7d67f4c01a80"
   },
   "checkpoint_sha256": "6f8b28b3b9aef9efc00adcaba84ed3a30237ed8335534994379a9178d9252ae1",
-  "checkpoint_use": "reproduction diagnostic only; never initialize A/B/C from this checkpoint"
+  "checkpoint_use": "reproduction diagnostic only; never initialize A/B/C from this checkpoint",
+  "retinexformer": {
+    "repository": "https://github.com/caiyuanhao1998/Retinexformer",
+    "commit": "1e9a0efce4b306b6701b824768370ff26066c32a",
+    "license": "MIT",
+    "use": "external high-capacity teacher for distillation only; public pretrained weights are not used",
+    "files": {
+      "vendor_retinexformer/RetinexFormer_arch.py": "1567c89d55285a3c1a4d4ca33f288b1fd98dc6b6bbdf971eda02d745f9087631",
+      "vendor_retinexformer/LICENSE.txt": "8c9e6d5a7b28e0fb08c5a4d0e72f582f514a2f2f1ab87a9e4fffa30e0dd4baf3"
+    }
+  }
 }
