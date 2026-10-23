@@ -2,6 +2,8 @@
 
 ## 2026-10-23 — 분할 실행·중간 저장·복구 보완
 
+실행 코드: [2e689f0](https://github.com/gidgogo/ondevice_project_v2/commit/2e689f075c8fd5029fa604b7b5630793e50c2220). 노트북 3개는 이 커밋을 사용한다.
+
 - 노트북 기본값 `EPOCHS_PER_SESSION=10`: 같은 본 학습 셀을 다시 누르면 다음 10 epoch를 실행. 전체 `EPOCHS=120`, 학습률 일정, 실험 이름은 유지.
 - 매 epoch 종료 후 Drive 저장. `progress.json`은 마지막 저장 epoch·남은 횟수·다음 epoch를 표시하고 `session.json`은 이번 실행 구간·코드 해시·환경을 기록.
 - 학습 전 epoch 0 checkpoint도 저장해 첫 epoch 도중 끊겨도 재개 가능.
