@@ -48,3 +48,5 @@
 자세한 재개·오류 대처: [Colab 안내](../docs/colab.md).
 
 역할별 후속 작업: [중간발표 역할 분담·실행 계획](../docs/team_roles.md).
+
+[전체 실행 계획표·현재 상태](../docs/execution_plan.md) · [GitHub 변경 이력](../CHANGELOG.md)

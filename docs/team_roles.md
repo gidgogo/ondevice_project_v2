@@ -3,6 +3,8 @@
 
 2026-10-23 갱신. 기준: LOL-v2-real 학습 620 / 검증 69 / 시험 100, 세 모델 모두 random 180×180 crop, 규칙 기반 선택기, Oracle 제외.
 
+작업 순서·선행 조건·완료 상태는 [실행 계획표](https://github.com/gidgogo/ondevice_project_v2/blob/main/docs/execution_plan.md), 코드 변경 내용은 [변경 이력](https://github.com/gidgogo/ondevice_project_v2/blob/main/CHANGELOG.md)에서 확인합니다. 코드가 준비됐다는 것과 학습 결과가 확보됐다는 것은 구분합니다.
+
 이번 실행은 Colab의 `gt_random_v1` 실험이다. 기존 center 결과는 예비 실험으로 보존한다. 실행 담당자는 [GitHub 팀 실행 안내](https://github.com/gidgogo/ondevice_project_v2/blob/main/colab/README.md)를 따른다.
 
 ---

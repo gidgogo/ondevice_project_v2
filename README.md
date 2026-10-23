@@ -27,6 +27,8 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 
 ## 진행 단계
 
+**2026-10-23 기준:** 실행 코드·노트북 준비 완료, 실제 Colab GPU 학습 결과는 아직 확인하지 않았다. [담당·순서·완료 기준 계획표](docs/execution_plan.md) · [GitHub 변경 이력](CHANGELOG.md)
+
 | 단계 | 내용 | 상태 |
 |---|---|---|
 | 1. 실험 기준 고정 | LOL-v2-real 점검·검증 분할, 평가 코드(PSNR·SSIM·LPIPS), CPU 시간 측정 규약 | 완료 ([data](docs/data.md), [측정 규약](docs/measurement_protocol.md)) |
@@ -47,7 +49,8 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 | `scripts/train.py` | 일반 학습과 출력 기반 증류(`beta`, `teacher`) |
 | `scripts/evaluation.py` | PSNR·SSIM·LPIPS 평가(시험 분할은 명시적 허용 필요) |
 | `scripts/benchmark_cpu.py` | CPU 시간(model / end-to-end, 평균·p95)·메모리 측정 |
-| `docs/` | 데이터, 측정 규약, 교사 후보 |
+| `docs/` | 실행 계획표, 역할 분담, 설계 결정, 데이터, 측정 규약, 교사 후보 |
+| `CHANGELOG.md` | 변경 파일·이유·관련 커밋·검증 범위 |
 | `vendor/` | 공식 UltraFast-LiNET 구현(커밋 `12e8c79`, Apache-2.0). 해시는 `provenance.json`에 고정 |
 | `scripts/*_a.py`, `prepare_data.py`, `evaluate.py`, `reproduce.py` | LOL-v1 재현 저장소 [gidgogo/ultrafast-linet-baseline](https://github.com/gidgogo/ultrafast-linet-baseline) `3ead18e`에서 가져온 기존 코드(LOL-v1 전용, 기록용) |
 | `weights/official_max.pkl` | 공식 공개 Max 가중치(LOL-v1) |
