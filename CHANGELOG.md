@@ -1,5 +1,17 @@
 # 변경 이력
 
+## 2026-10-23 — 고성능 교사(Retinexformer)·증류·선택기 실행 코드
+
+실행 코드: [a0a07aa](https://github.com/gidgogo/ondevice_project_v2/commit/a0a07aafa9f3bcb6f87842521cdc839a4876e88d). 새 노트북 2개(`colab/04_teacher`, `colab/05_kd`)는 이 커밋을 사용한다. 일반 학습 노트북 3개와 그 고정 커밋은 바꾸지 않았다.
+
+- 고성능 교사를 **Retinexformer**(학습 파라미터 1,605,701개, MIT)로 선정. HVI-CIDNet은 이번 범위에서 제외. 구조 파일은 수정 없이 `vendor_retinexformer/`에 두고 해시를 `provenance.json`에 고정.
+- `scripts/train_teacher.py`: 우리 train 620쌍으로 처음부터 학습, validation 69쌍으로 best 선택. 원 설정(L1, Adam 2e-4, grad clip 0.01, 256 패치, batch 8, 뒤집기·회전)을 따르되 반복 수는 30,000(시작안)으로 줄이고 단일 cosine 사용, mixup 제외. 반복 번호로 배치를 정해 재개해도 같은 순서. 점검 실행이 반복당 시간과 전체 예상 시간을 기록.
+- `scripts/train.py`: 외부 교사도 학생과 같은 random 패치에서 온라인으로 계산(`teacher={"model": "retinexformer", ...}`). 교사 checkpoint 해시를 `run.json`에 기록하고 다른 교사로의 재개를 거부. 일반 학습 동작은 그대로.
+- `scripts/eval_checkpoint.py`: 학생·교사의 이미지별 PSNR·SSIM(·LPIPS) 평가. 시험 분할은 `--allow-test` 필요.
+- `scripts/selector.py`: 64×64 썸네일 밝기 규칙 선택기. 검증에서 임계값 고정(Max+* 대비 PSNR 0.2 dB 이내 중 가장 빠른 규칙), 같은 호출 비율의 무작위 선택 대비 이득·심한 저하 비율 기록, 시험에는 그대로 적용. 선택 비용 측정 하위 명령 포함.
+- 노트북: 교사 학습(점검·예상 시간·본 학습·Max+ 대비 비교), 증류(학생·교사·β 선택, 일반 학습 initial.pt·설정 일치 검사, 일반 학습 대비 차이 출력).
+- 로컬 테스트 **49개 통과**(교사 구조 해시·크기, 교사 학습 분할 재개 일치, 온라인 교사 증류, 시험 평가 거부, 선택기 격자·무작위 기준·시험 적용 포함). 두 노트북은 CPU·작은 데이터로 셀 흐름을 대체 실행해 확인. **실제 Colab GPU 학습·교사 성능·증류 효과는 아직 확인하지 않음.**
+
 ## 2026-10-23 — 기본 실행 분량 120으로 조정
 
 실행 코드: [4ecc0ba](https://github.com/gidgogo/ondevice_project_v2/commit/4ecc0ba3c8977d52e22f51bd9733ec1814c54be3). 최신 노트북 3개는 이 커밋을 사용한다.
