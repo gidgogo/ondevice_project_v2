@@ -2,6 +2,8 @@
 
 ## 2026-10-23 — 기본 실행 분량 120으로 조정
 
+실행 코드: [4ecc0ba](https://github.com/gidgogo/ondevice_project_v2/commit/4ecc0ba3c8977d52e22f51bd9733ec1814c54be3). 최신 노트북 3개는 이 커밋을 사용한다.
+
 - EPOCHS_PER_SESSION 기본값을 10에서 **120**으로 변경해 남은 학습을 끝까지 진행하도록 함. 총 EPOCHS=120은 그대로이며 초과 학습하지 않음.
 - 매 epoch 저장·직전 백업·복구는 유지. 짧게 나누는 기능은 시간 측정·제한된 실행용 선택 사항으로 남김.
 - 10 epoch마다 수동 재실행하고 유휴 런타임을 방치하는 부담을 줄이기 위한 변경. 짧은 구간 종료 후에는 직접 재실행해야 하며 연속 실행 완료도 보장되지 않음을 안내.
@@ -9,7 +11,7 @@
 
 ## 2026-10-23 — 분할 실행·중간 저장·복구 보완
 
-실행 코드: [2e689f0](https://github.com/gidgogo/ondevice_project_v2/commit/2e689f075c8fd5029fa604b7b5630793e50c2220). 노트북 3개는 이 커밋을 사용한다.
+실행 코드: [2e689f0](https://github.com/gidgogo/ondevice_project_v2/commit/2e689f075c8fd5029fa604b7b5630793e50c2220). 당시 노트북 3개는 이 커밋을 사용했다.
 
 - 노트북 기본값 `EPOCHS_PER_SESSION=10`: 같은 본 학습 셀을 다시 누르면 다음 10 epoch를 실행. 전체 `EPOCHS=120`, 학습률 일정, 실험 이름은 유지.
 - 매 epoch 종료 후 Drive 저장. `progress.json`은 마지막 저장 epoch·남은 횟수·다음 epoch를 표시하고 `session.json`은 이번 실행 구간·코드 해시·환경을 기록.
