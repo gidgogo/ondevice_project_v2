@@ -107,8 +107,12 @@ def main():
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--set", nargs="*", default=[], metavar="KEY=VALUE", help="Override config values (JSON values)")
     p.add_argument("--resume", action="store_true", help="Continue from OUTPUT/last.pt")
+    p.add_argument("--init-checkpoint", type=Path, help="Student initial.pt from a matched GT run (not with --resume)")
+    p.add_argument("--stop-after-epoch", type=int, help="Save and stop at this epoch; retain the full schedule for resume")
     p.add_argument("--max-train-batches", type=int, help="Pilot only: cap batches per epoch")
     args = p.parse_args()
+    if args.resume and args.init_checkpoint:
+        p.error("--resume and --init-checkpoint cannot be combined")
 
     cfg = dict(DEFAULTS)
     if args.config:
@@ -125,6 +129,10 @@ def main():
         raise ValueError("A teacher requires beta > 0")
     if not cfg["teacher"] and cfg["beta"] != 0:
         raise ValueError("beta > 0 requires a teacher")
+    if cfg["epochs"] < 1 or cfg["batch_size"] < 1:
+        raise ValueError("epochs and batch_size must be positive")
+    if args.max_train_batches is not None and args.max_train_batches < 1:
+        raise ValueError("max-train-batches must be positive")
     pilot = args.max_train_batches is not None
 
     if args.output.exists() and any(args.output.iterdir()) and not args.resume:
@@ -133,13 +141,23 @@ def main():
     device = torch.device(cfg["device"])
     seed_everything(cfg["seed"], cfg["threads"], device)
 
-    teacher, teacher_dir = load_teacher(cfg["teacher"], device)
+    # Build the student first: constructing a teacher consumes the global RNG.
+    # GT and KD must start from identical student weights at the same seed.
+    model = build_model(cfg["model"])
+    if args.init_checkpoint:
+        initial = torch.load(args.init_checkpoint, map_location="cpu", weights_only=True)
+        if initial.get("model") != cfg["model"]:
+            raise ValueError("Initial checkpoint model does not match this run")
+        model.load_state_dict(initial["weight"], strict=True)
+    model = model.to(device)
+    # Teacher construction must not change the student's subsequent RNG stream.
+    with torch.random.fork_rng(devices=list(range(torch.cuda.device_count())) if device.type == "cuda" else []):
+        teacher, teacher_dir = load_teacher(cfg["teacher"], device)
     train_set = PairCrops(args.manifests / "train.json", args.data_root, cfg["crop"], cfg["crop_mode"],
                           teacher_dir, cfg["seed"])
     validation_manifest = args.manifests / "validation.json"
     if json.loads(validation_manifest.read_text())["split"] != "validation":
         raise ValueError("Validation manifest expected")
-    model = build_model(cfg["model"]).to(device)
     generator = torch.Generator().manual_seed(cfg["seed"])
     loader = DataLoader(train_set, batch_size=cfg["batch_size"], shuffle=True,
                         num_workers=cfg["num_workers"], generator=generator)
@@ -148,6 +166,9 @@ def main():
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg["lr_step"], gamma=cfg["lr_gamma"])
 
     metadata = {"config": cfg, "pilot": pilot, "parameters": count_parameters(model),
+                "max_train_batches": args.max_train_batches,
+                "initial_checkpoint_source_sha256": sha256(args.init_checkpoint) if args.init_checkpoint else None,
+                "gpu": torch.cuda.get_device_name(device) if device.type == "cuda" else None,
                 "environment": environment(), "device": str(device),
                 "manifests_sha256": {s: sha256(args.manifests / f"{s}.json") for s in ("train", "validation")},
                 "source_sha256": {n: sha256(ROOT / "scripts" / n) for n in ("train.py", "models.py", "evaluation.py", "common.py")},
@@ -158,18 +179,28 @@ def main():
         previous = json.loads((args.output / "run.json").read_text())
         if previous["config"] != cfg:
             raise ValueError("Cannot resume with a different configuration")
+        if previous.get("max_train_batches") != args.max_train_batches or previous["pilot"] != pilot:
+            raise ValueError("Cannot mix pilot and full training when resuming")
+        if previous["manifests_sha256"] != metadata["manifests_sha256"]:
+            raise ValueError("Cannot resume with different data manifests")
         checkpoint = torch.load(args.output / "last.pt", map_location="cpu", weights_only=False)
         model.load_state_dict(checkpoint["weight"])
         optimizer.load_state_dict(checkpoint["optimizer"])
         scheduler.load_state_dict(checkpoint["scheduler"])
         torch.set_rng_state(checkpoint["torch_rng_state"])
+        if device.type == "cuda" and checkpoint.get("cuda_rng_state_all") is not None:
+            torch.cuda.set_rng_state_all(checkpoint["cuda_rng_state_all"])
         generator.set_state(checkpoint["generator_state"])
         start_epoch, best = checkpoint["epoch"], checkpoint["best"]
     else:
+        atomic_save({"weight": {k: v.detach().cpu() for k, v in model.state_dict().items()},
+                     "model": cfg["model"], "seed": cfg["seed"]}, args.output / "initial.pt")
+        metadata["initial_sha256"] = sha256(args.output / "initial.pt")
         write_json(args.output / "run.json", metadata)
         with open(args.output / "log.csv", "w", newline="") as f:
             csv.DictWriter(f, fieldnames=fields).writeheader()
 
+    completed_epoch = start_epoch
     for epoch in range(start_epoch + 1, cfg["epochs"] + 1):
         train_set.epoch = epoch
         model.train()
@@ -210,6 +241,7 @@ def main():
             write_json(args.output / "best_validation_per_image.json", per_image)
         atomic_save({"weight": model.state_dict(), "optimizer": optimizer.state_dict(),
                      "scheduler": scheduler.state_dict(), "epoch": epoch, "best": best,
+                     "cuda_rng_state_all": torch.cuda.get_rng_state_all() if device.type == "cuda" else None,
                      "torch_rng_state": torch.get_rng_state(), "generator_state": generator.get_state()},
                     args.output / "last.pt")
         row = {"epoch": epoch, "loss": totals["loss"] / seen, "kd": totals["kd"] / seen,
@@ -218,7 +250,12 @@ def main():
         with open(args.output / "log.csv", "a", newline="") as f:
             csv.DictWriter(f, fieldnames=fields).writerow(row)
         print(json.dumps(row), flush=True)
-    write_json(args.output / "summary.json", {"completed_epochs": cfg["epochs"], "best": best, "pilot": pilot,
+        completed_epoch = epoch
+        if args.stop_after_epoch is not None and epoch >= args.stop_after_epoch:
+            break
+    write_json(args.output / "summary.json", {"completed_epochs": completed_epoch,
+                                              "training_complete": completed_epoch == cfg["epochs"],
+                                              "best": best, "pilot": pilot,
                                               "parameters": metadata["parameters"], "official_test_used": False})
 
 

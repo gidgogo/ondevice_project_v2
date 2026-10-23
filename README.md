@@ -4,6 +4,20 @@
 
 UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지식 증류를 비교하고, 크기별로 선발한 모델을 사진 상태에 따라 선택했을 때 품질과 전체 실행 비용(노트북 CPU)이 어떻게 달라지는지 검증한다.
 
+## 팀원별 Colab 실행
+
+담당 모델의 링크를 열어 **GPU 런타임**을 선택한 뒤 위에서부터 실행한다. 세 작업은 서로 기다리지 않고 독립적으로 실행할 수 있다. 무료 GPU 배정 여부는 각 실행 환경에 따라 다르다.
+
+| 담당 작업 | 실행 파일 | 바로 실행 | 결과 폴더 |
+|---|---|---|---|
+| Mini 일반 학습 (36개 파라미터) | [01_mini](colab/01_mini/) | [Colab에서 열기](https://colab.research.google.com/github/gidgogo/ondevice_project_v2/blob/main/colab/01_mini/train.ipynb) | `mini_gt_s42/` |
+| Max 일반 학습 (180개 파라미터) | [02_max](colab/02_max/) | [Colab에서 열기](https://colab.research.google.com/github/gidgogo/ondevice_project_v2/blob/main/colab/02_max/train.ipynb) | `max_gt_s42/` |
+| Max+ 일반 학습 (937개 파라미터, 프로젝트 확장 모델) | [03_maxplus](colab/03_maxplus/) | [Colab에서 열기](https://colab.research.google.com/github/gidgogo/ondevice_project_v2/blob/main/colab/03_maxplus/train.ipynb) | `maxplus_gt_s42/` |
+
+**먼저 준비할 것:** 각자의 Google Drive `내 드라이브/ondevice/LOLv2.zip`. 기존 프로젝트에서 확인한 원본 압축파일을 사용한다. 코드는 노트북이 GitHub의 고정 커밋에서 자동으로 가져오며 코드 ZIP 업로드는 필요 없다.
+
+**기본 설정:** train 620 / validation 69, seed 42, 120 epoch, batch 40. 최종 연구 설정 확정 전의 공통 시작 설정이다. [팀 실행 안내](colab/README.md) · [저장·재개·증류 연결 안내](docs/colab.md)
+
 ## 연구 질문
 
 1. 초경량 모델에서도 증류가 일반 학습보다 복원 품질을 높이는가? 교사 종류에 따라 효과가 다른가?
@@ -14,7 +28,7 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 | 단계 | 내용 | 상태 |
 |---|---|---|
 | 1. 실험 기준 고정 | LOL-v2-real 점검·검증 분할, 평가 코드(PSNR·SSIM·LPIPS), CPU 시간 측정 규약 | 완료 ([data](docs/data.md), [측정 규약](docs/measurement_protocol.md)) |
-| 2. 모델·교사 준비 | Mini·Max·Max+ 일반 학습, 고성능 교사 후보 검증 | 진행 중: 모델·학습·증류 코드 완료, CPU 예비 학습 중, [교사 후보](docs/teacher_candidates.md) 조사 |
+| 2. 모델·교사 준비 | Mini·Max·Max+ 일반 학습, 고성능 교사 후보 검증 | 모델·학습·증류 코드 및 Colab 실행 파일 준비. [교사 후보](docs/teacher_candidates.md) 조사 단계 |
 | 3. 증류와 선발 | 8개 구성 비교 → Mini*·Max*·Max+* | 예정 |
 | 4. 사진별 모델 선택 | 사진 상태별 결과 비교, 선택 기준 결정 | 예정 |
 | 5. 최종 시험·시제품 | 설정 고정 후 시험, 로컬 사진 보정 | 예정 |
@@ -23,6 +37,8 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 
 | 경로 | 내용 |
 |---|---|
+| `colab/01_mini`, `colab/02_max`, `colab/03_maxplus` | 담당 모델별 독립 실행 노트북과 결과 전달 안내 |
+| `configs/colab_gt.json` | 세 일반 학습 모델의 공통 설정 |
 | `scripts/models.py` | Mini(36) / Max(180) / Max+(937 = Max + 원본 해상도 보정망, 처음엔 Max와 같은 출력) |
 | `scripts/audit_lolv2.py`, `scripts/prepare_lolv2.py` | LOL-v2-real 점검, 장면 단위 검증 분할 |
 | `manifests/lolv2_real/` | 고정된 train 620 / validation 69 / test 100 목록 |
@@ -37,6 +53,9 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 LOL-v1 재현 결과(시험 PSNR 17.9173 dB / SSIM 0.527209)는 기존 저장소에 기록되어 있으며, 새 LOL-v2-real 결과와 직접 비교하지 않는다.
 
 ## 실행
+
+**Colab에서 Mini·Max·Max+를 각각 학습:** [노트북 준비·실행·재개 안내](docs/colab.md).
+`scripts/package_colab.py`로 노트북 3개와 현재 코드 ZIP을 생성한다. 초기 가중치도 저장하므로 후속 증류와 출발점을 맞출 수 있다.
 
 ```bash
 uv venv .venv --python 3.12
