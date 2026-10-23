@@ -1,5 +1,14 @@
 # 변경 이력
 
+## 2026-10-24 — 교사·증류 노트북 설정 반영, 교사 복구, 선택기 누락 검사
+
+실행 코드: [1c2ad21](https://github.com/gidgogo/ondevice_project_v2/commit/1c2ad2128f75242559859b8ddc1eced21c3c88bf). `colab/04_teacher`, `colab/05_kd`는 이 커밋을 사용한다. 일반 학습 노트북 3개는 바꾸지 않았다. **이전 `a0a07aa` 노트북으로 교사 본 학습을 시작하지 말 것.**
+
+- 교사·증류 노트북: 점검 셀에서 만든 명령을 본 학습 셀이 다시 쓰던 문제 수정. 각 실행 셀이 `teacher_plan()` / `kd_plan()`으로 **그 순간의 설정 셀 값**에서 경로·명령을 새로 만들고 준비 파일을 다시 검사한다. 점검 후 `TOTAL_ITERS`나 `BETA`를 바꾸면 설정 셀을 다시 실행한 뒤 본 학습 셀을 실행한다.
+- `scripts/train_teacher.py`: 마지막 checkpoint 저장 직후 `best.pt`·로그·완료 기록을 쓰기 전에 끊긴 경우, 재개 시 checkpoint에서 결과 파일과 `summary.json`을 복원한다.
+- `scripts/selector.py`: 검증 manifest의 모든 이미지가 세 결과 파일에 빠짐없이 있어야 한다(세 파일에서 같은 이미지가 함께 빠져도 거부, 추가·중복 이미지도 거부). 다른 분할의 평가 보고서도 거부한다.
+- 위 세 경우의 테스트 5개 추가(이전 커밋에서는 실패). 전체 로컬 테스트 **54개 통과**. 점검 뒤 `TOTAL_ITERS`·`BETA`를 바꿔 본 학습에 반영되는지 노트북 셀 흐름을 CPU·작은 데이터로 대체 실행해 확인. 실제 Colab GPU 실행은 아직 확인하지 않음.
+
 ## 2026-10-23 — 고성능 교사(Retinexformer)·증류·선택기 실행 코드
 
 실행 코드: [a0a07aa](https://github.com/gidgogo/ondevice_project_v2/commit/a0a07aafa9f3bcb6f87842521cdc839a4876e88d). 새 노트북 2개(`colab/04_teacher`, `colab/05_kd`)는 이 커밋을 사용한다. 일반 학습 노트북 3개와 그 고정 커밋은 바꾸지 않았다.

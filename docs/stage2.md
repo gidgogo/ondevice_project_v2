@@ -13,7 +13,7 @@
 ## ① 고성능 교사 학습 — `colab/04_teacher/train.ipynb`
 
 - 우리 train 620쌍으로 Retinexformer를 처음부터 학습한다. 설정과 원 논문 설정의 차이는 [교사 문서](teacher_candidates.md).
-- 점검 셀이 **반복당 시간과 TOTAL_ITERS 전체의 예상 시간**을 출력한다. 예상 시간을 보고 `TOTAL_ITERS`를 정한 뒤 본 학습을 시작한다(시작 후 바꾸면 새 EXPERIMENT).
+- 점검 셀이 **반복당 시간과 TOTAL_ITERS 전체의 예상 시간**을 출력한다. 예상 시간을 보고 설정 셀의 `TOTAL_ITERS`를 고친 뒤 **설정 셀을 다시 실행**하고 본 학습을 시작한다(실행 셀마다 현재 설정으로 명령을 새로 만든다). 시작 후 바꾸면 새 EXPERIMENT.
 - 1,000회마다 검증·저장, 끊기면 같은 셀로 이어감. 결과: `내 드라이브/ondevice/teachers/teacher_v1/retinexformer_s42/`
 - 마지막 셀이 검증 69장 점수를 Max+ 일반 학습과 비교한다. 확실히 높지 않으면 고성능 교사로 쓰지 않는다.
 
