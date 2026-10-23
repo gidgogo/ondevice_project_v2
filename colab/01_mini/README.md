@@ -5,8 +5,8 @@
 - 모델: **Mini**, 학습 파라미터 **36개**
 - 노트북: [train.ipynb](train.ipynb)
 - 준비 데이터: Drive의 `내 드라이브/ondevice/LOLv2.zip`
-- 결과: `내 드라이브/ondevice/runs/gt_v1/mini_gt_s42/`
-- 환경 기록: `내 드라이브/ondevice/environments/gt_v1/mini_s42/`
+- 결과: `내 드라이브/ondevice/runs/gt_random_v1/mini_gt_s42/`
+- 환경 기록: `내 드라이브/ondevice/environments/gt_random_v1/mini_s42/`
 - 공통 설정: seed 42 / 120 epoch / batch 40 / 학습 620쌍 / 검증 69쌍
 
 다른 모델의 학습 결과를 기다리지 않고 시작합니다.

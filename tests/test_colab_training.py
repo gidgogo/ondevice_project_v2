@@ -24,7 +24,7 @@ def tiny_data(tmp_path):
             row = {"name": f"{split}_{i}"}
             for kind, upper in (("low", 40), ("high", 230)):
                 filename = f"{split}_{kind}_{i}.png"
-                Image.fromarray(rng.integers(0, upper, (180, 180, 3), dtype=np.uint8)).save(tmp_path / filename)
+                Image.fromarray(rng.integers(0, upper, (190, 200, 3), dtype=np.uint8)).save(tmp_path / filename)
                 row[kind] = filename
             rows.append(row)
         (manifests / f"{split}.json").write_text(json.dumps({"split": split, "pairs": rows}))
@@ -49,7 +49,7 @@ def assert_same(a, b):
 @pytest.mark.parametrize("model", ["mini", "max", "maxplus"])
 def test_three_models_train_and_resume_identically(tiny_data, tmp_path, model):
     full, resumed = tmp_path / "full", tmp_path / "resumed"
-    options = ["--set", f'model="{model}"', "epochs=2", "batch_size=2", "lr_step=1"]
+    options = ["--set", f'model="{model}"', "epochs=2", "batch_size=2", "lr_step=1", 'crop_mode="random"']
     run(tiny_data + ["--output", str(full)] + options)
     run(tiny_data + ["--output", str(resumed), "--stop-after-epoch", "1"] + options)
     assert json.loads((resumed / "summary.json").read_text())["training_complete"] is False

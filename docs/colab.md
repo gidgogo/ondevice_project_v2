@@ -27,16 +27,20 @@
 
 ## 공통 설정
 
-`configs/colab_gt.json`은 기존 기본값을 사용한다: seed 42, 120 epoch, batch 40, 180×180 center crop, Adam lr 0.01, 40 epoch마다 lr ×0.1, FP32. 최종 학습 예산 확정은 별도이며 세 모델을 같은 조건으로 비교하기 위한 시작 설정이다.
+`configs/colab_gt.json`의 공통 시작 설정은 다음과 같다: seed 42, 120 epoch, batch 40, 180×180 random crop, Adam lr 0.01, 40 epoch마다 lr ×0.1, FP32. 최종 학습 예산 확정은 별도이며 세 모델을 같은 조건으로 비교하기 위한 시작 설정이다.
 
 고정 manifest의 학습 620쌍과 검증 69쌍만 읽는다. 데이터 분할을 새로 만들지 않으며 시험 100장은 평가하지 않는다. 학습·검증 이미지의 해시를 검사한다. 원래 LOLv2.zip의 해시도 확인하므로 다른 형태로 다시 압축한 파일은 거절한다.
 
 메모리가 부족하면 **세 노트북 모두** 배치 크기를 동일하게 줄인다. 설정 변경 시 EXPERIMENT를 새 이름으로 지정한다. 같은 모델·실험 폴더에 두 작업을 동시에 실행하지 않는다.
 
+2026-10-23: 세 모델의 학습 패치를 **random 180×180**으로 통일했다. 동일한 seed·epoch·이미지에서는 같은 위치를 잘라 모델 간 조건을 맞춘다. 검증은 원본 해상도 전체 이미지로 수행한다. 이전 `gt_v1/`의 center 학습 결과는 예비 실험으로 보존하고 새 `gt_random_v1/`에서 처음부터 학습한다. 기존 center checkpoint를 random 학습의 초기값으로 사용하거나 이어서 학습하지 않는다.
+
+과거에 Drive에 저장한 노트북 사본은 자동 갱신되지 않는다. GitHub의 최신 노트북을 다시 열고 `EXPERIMENT = "gt_random_v1"` 및 실행 준비 셀의 `학습 crop: random 180` 출력을 확인한다. 설정만 변경한 뒤 예전 CODE_REF를 유지하면 옛 코드가 실행되므로, 코드 커밋 후 새 SHA로 노트북 3개를 함께 재생성한다.
+
 기본 결과 폴더:
 
 ```text
-내 드라이브/ondevice/runs/gt_v1/
+내 드라이브/ondevice/runs/gt_random_v1/
   mini_gt_s42/
   max_gt_s42/
   maxplus_gt_s42/

@@ -14,6 +14,9 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from evaluation import evaluate  # noqa: E402
 from models import build_model, count_parameters  # noqa: E402
 from prepare_lolv2 import choose_validation  # noqa: E402
+# common adds vendor/ to sys.path; select our train.py, not vendor/train.py,
+# even when this test file is collected on its own.
+sys.path.insert(0, str(ROOT / "scripts"))
 from train import PairCrops  # noqa: E402
 
 torch.set_num_threads(1)

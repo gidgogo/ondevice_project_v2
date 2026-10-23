@@ -16,9 +16,11 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 
 **먼저 준비할 것:** 각자의 Google Drive `내 드라이브/ondevice/LOLv2.zip`. 기존 프로젝트에서 확인한 원본 압축파일을 사용한다. 코드는 노트북이 GitHub의 고정 커밋에서 자동으로 가져오며 코드 ZIP 업로드는 필요 없다.
 
-**기본 설정:** train 620 / validation 69, seed 42, 120 epoch, batch 40. 최종 연구 설정 확정 전의 공통 시작 설정이다. [팀 실행 안내](colab/README.md) · [저장·재개·증류 연결 안내](docs/colab.md)
+**기본 설정:** train 620 / validation 69, seed 42, 120 epoch, batch 40, **random crop 180×180**. 학습 예산은 공통 시작 설정이며 예비 실행에서 확인한다. 결과는 `gt_random_v1/`에 저장하고 이전 center 결과(`gt_v1/`)는 보존한다. **옛 Colab 사본은 자동 갱신되지 않으므로 위 링크에서 최신 사본을 열 것.** [팀 실행 안내](colab/README.md) · [저장·재개·증류 연결 안내](docs/colab.md) · [역할 분담](docs/team_roles.md)
 
 ## 연구 질문
+
+실험 조건의 변경 이유와 이전 설계의 차이는 [실행 기준 기록](docs/experiment_decisions.md)에 정리했다.
 
 1. 초경량 모델에서도 증류가 일반 학습보다 복원 품질을 높이는가? 교사 종류에 따라 효과가 다른가?
 2. 사진별 모델 선택이 한 모델을 고정해서 쓰는 것보다 품질·전체 처리시간·메모리 면에서 유리한가?
@@ -68,10 +70,11 @@ uv pip install --python .venv/bin/python -r requirements.lock.txt
 cd scripts
 ../.venv/bin/python prepare_lolv2.py --data-root ../data/raw/LOLv2/Real_captured --output ../manifests/lolv2_real
 # 일반 학습
-../.venv/bin/python train.py --data-root ../data/raw/LOLv2/Real_captured --output ../runs/max_gt_s42 --set model='"max"'
+../.venv/bin/python train.py --data-root ../data/raw/LOLv2/Real_captured --config ../configs/colab_gt.json --output ../runs/gt_random_v1/max_gt_s42 --set model='"max"' device='"cpu"'
 # 증류 (교사 = 학습된 Max+)
-../.venv/bin/python train.py --data-root ../data/raw/LOLv2/Real_captured --output ../runs/mini_basekd_s42 \
-  --set model='"mini"' beta=0.5 'teacher={"model":"maxplus","checkpoint":"../runs/maxplus_gt_s42/best.pt"}'
+../.venv/bin/python train.py --data-root ../data/raw/LOLv2/Real_captured --config ../configs/colab_gt.json --output ../runs/gt_random_v1/mini_basekd_s42 \
+  --init-checkpoint ../runs/gt_random_v1/mini_gt_s42/initial.pt \
+  --set model='"mini"' device='"cpu"' beta=0.5 'teacher={"model":"maxplus","checkpoint":"../runs/gt_random_v1/maxplus_gt_s42/best.pt"}'
 # CPU 시간
 ../.venv/bin/python benchmark_cpu.py --image ../data/raw/LOLv2/Real_captured/Train/Low/00011.png
 ```

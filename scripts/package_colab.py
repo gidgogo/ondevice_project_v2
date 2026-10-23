@@ -36,7 +36,7 @@ def notebook(model, digest):
                 2. 아래 경로·실험 이름을 확인합니다. 세 노트북에서 공통 설정을 동일하게 유지하세요.
                 3. 짧은 점검(2배치 + 검증 69장)이 성공하면 본 학습 셀을 실행합니다.
 
-                기본값은 기존 코드의 **120 epoch / batch 40 / crop 180 / seed 42**입니다.
+                공통 시작 설정은 **120 epoch / batch 40 / random crop 180 / seed 42**입니다.
                 최종 연구 설정이 확정된 것은 아닙니다. 설정을 바꾸면 세 모델에 동일하게 적용하고 새 EXPERIMENT를 쓰세요.
                 시험 100장은 학습·체크포인트 선택에 사용하지 않습니다.
                 GPU 할당·연속 실행 시간은 보장되지 않습니다. 같은 모델·실험 폴더를 두 런타임에서 동시에 쓰지 마세요.
@@ -44,10 +44,11 @@ def notebook(model, digest):
             cell("code", f'''
                 from pathlib import Path
                 MODEL = {model!r}  # 이 노트북의 담당 모델
-                EXPERIMENT = "gt_v1"
+                EXPERIMENT = "gt_random_v1"
                 SEED = 42
                 EPOCHS = 120
                 BATCH_SIZE = 40
+                EXPECTED_CROP_MODE = "random"
                 BASE = Path("/content/drive/MyDrive/ondevice")
                 CODE_ZIP = BASE / "colab_code.zip"
                 DATA_ZIP = BASE / "LOLv2.zip"
@@ -89,6 +90,9 @@ def notebook(model, digest):
                                 str(REPO / "requirements-colab.txt")], check=True)
                 sys.path.insert(0, str(REPO / "scripts"))
                 from models import build_model, count_parameters
+                actual_config = json.loads((REPO / "configs/colab_gt.json").read_text())
+                assert actual_config["crop_mode"] == EXPECTED_CROP_MODE and actual_config["crop"] == 180, "예상한 random 180 설정과 실행 코드가 다릅니다. 새 노트북을 사용하세요."
+                print("학습 crop:", actual_config["crop_mode"], actual_config["crop"])
                 print("GPU:", torch.cuda.get_device_name(0))
                 print("PyTorch:", torch.__version__, "torchvision:", torchvision.__version__)
                 print("모델:", MODEL, "파라미터:", count_parameters(build_model(MODEL)))
