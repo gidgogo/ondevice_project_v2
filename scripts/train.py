@@ -13,8 +13,11 @@ import csv
 import json
 import math
 import os
+import pickle
 import random
+import shutil
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -93,10 +96,46 @@ def seed_everything(seed, threads, device):
         torch.use_deterministic_algorithms(True)
 
 
-def atomic_save(value, path):
+def atomic_save(value, path, keep_previous=False):
+    path = Path(path)
     temporary = Path(str(path) + ".tmp")
-    torch.save(value, temporary)
+    with open(temporary, "wb") as f:
+        torch.save(value, f)
+        f.flush()
+        os.fsync(f.fileno())
+    if keep_previous and path.exists():
+        backup = path.with_name("last.prev.pt")
+        backup_temp = Path(str(backup) + ".tmp")
+        shutil.copyfile(path, backup_temp)
+        os.replace(backup_temp, backup)
     os.replace(temporary, path)
+
+
+def atomic_json(path, value):
+    temporary = Path(str(path) + ".tmp")
+    write_json(temporary, value)
+    os.replace(temporary, path)
+
+
+def load_resume_checkpoint(output):
+    """Fall back on an unreadable checkpoint, never on a configuration mismatch."""
+    errors = []
+    for name in ("last.pt", "last.prev.pt"):
+        try:
+            checkpoint = torch.load(output / name, map_location="cpu", weights_only=False)
+            if not isinstance(checkpoint, dict):
+                raise ValueError("Checkpoint is not a dictionary")
+            for key in ("weight", "optimizer", "scheduler", "epoch", "best", "torch_rng_state", "generator_state"):
+                if key not in checkpoint:
+                    raise ValueError(f"Missing checkpoint key: {key}")
+        except (OSError, RuntimeError, ValueError, KeyError, EOFError, pickle.UnpicklingError) as error:
+            errors.append(f"{name}: {type(error).__name__}")
+            continue
+        if name == "last.prev.pt":
+            atomic_save(checkpoint, output / "last.pt")
+            print(f"Recovered epoch {checkpoint['epoch']} from last.prev.pt", flush=True)
+        return checkpoint
+    raise RuntimeError("No readable resume checkpoint: " + "; ".join(errors))
 
 
 def main():
@@ -109,10 +148,13 @@ def main():
     p.add_argument("--resume", action="store_true", help="Continue from OUTPUT/last.pt")
     p.add_argument("--init-checkpoint", type=Path, help="Student initial.pt from a matched GT run (not with --resume)")
     p.add_argument("--stop-after-epoch", type=int, help="Save and stop at this epoch; retain the full schedule for resume")
+    p.add_argument("--epochs-per-session", type=int, help="Run this many additional epochs without changing the total schedule")
     p.add_argument("--max-train-batches", type=int, help="Pilot only: cap batches per epoch")
     args = p.parse_args()
     if args.resume and args.init_checkpoint:
         p.error("--resume and --init-checkpoint cannot be combined")
+    if args.epochs_per_session is not None and args.epochs_per_session < 1:
+        p.error("--epochs-per-session must be positive")
 
     cfg = dict(DEFAULTS)
     if args.config:
@@ -174,6 +216,7 @@ def main():
                 "source_sha256": {n: sha256(ROOT / "scripts" / n) for n in ("train.py", "models.py", "evaluation.py", "common.py")},
                 "selection": "max mean validation PSNR; ties keep the earlier epoch", "official_test_used": False}
     start_epoch, best = 0, {"psnr": -math.inf, "epoch": 0}
+    history, best_checkpoint = [], None
     fields = ["epoch", "loss", "kd", "val_psnr", "val_ssim", "lr", "train_seconds", "val_seconds", "images_seen"]
     if args.resume:
         previous = json.loads((args.output / "run.json").read_text())
@@ -183,7 +226,7 @@ def main():
             raise ValueError("Cannot mix pilot and full training when resuming")
         if previous["manifests_sha256"] != metadata["manifests_sha256"]:
             raise ValueError("Cannot resume with different data manifests")
-        checkpoint = torch.load(args.output / "last.pt", map_location="cpu", weights_only=False)
+        checkpoint = load_resume_checkpoint(args.output)
         model.load_state_dict(checkpoint["weight"])
         optimizer.load_state_dict(checkpoint["optimizer"])
         scheduler.load_state_dict(checkpoint["scheduler"])
@@ -192,16 +235,75 @@ def main():
             torch.cuda.set_rng_state_all(checkpoint["cuda_rng_state_all"])
         generator.set_state(checkpoint["generator_state"])
         start_epoch, best = checkpoint["epoch"], checkpoint["best"]
+        history = checkpoint.get("history", [])
+        best_checkpoint = checkpoint.get("best_checkpoint")
+        # Import epoch-boundary checkpoints produced by the previous trainer.
+        if "history" not in checkpoint and (args.output / "log.csv").exists():
+            with open(args.output / "log.csv", newline="") as f:
+                history = [r for r in csv.DictReader(f) if int(r["epoch"]) <= start_epoch]
+        if best_checkpoint is None and best["epoch"] > 0:
+            best_checkpoint = torch.load(args.output / "best.pt", map_location="cpu", weights_only=True)
+            if best_checkpoint["epoch"] != best["epoch"]:
+                raise ValueError("Legacy best.pt and last.pt disagree; preserve this run for manual recovery")
+            best_checkpoint["per_image"] = json.loads((args.output / "best_validation_per_image.json").read_text())
     else:
         atomic_save({"weight": {k: v.detach().cpu() for k, v in model.state_dict().items()},
                      "model": cfg["model"], "seed": cfg["seed"]}, args.output / "initial.pt")
         metadata["initial_sha256"] = sha256(args.output / "initial.pt")
-        write_json(args.output / "run.json", metadata)
-        with open(args.output / "log.csv", "w", newline="") as f:
-            csv.DictWriter(f, fieldnames=fields).writeheader()
+        atomic_json(args.output / "run.json", metadata)
+
+    def save_checkpoint(epoch):
+        atomic_save({"format_version": 2, "weight": model.state_dict(), "optimizer": optimizer.state_dict(),
+                     "scheduler": scheduler.state_dict(), "epoch": epoch, "best": best,
+                     "best_checkpoint": best_checkpoint, "history": history,
+                     "cuda_rng_state_all": torch.cuda.get_rng_state_all() if device.type == "cuda" else None,
+                     "torch_rng_state": torch.get_rng_state(), "generator_state": generator.get_state()},
+                    args.output / "last.pt", keep_previous=True)
+
+    def export_progress(epoch):
+        # Rebuild derived files from the checkpoint after an interrupted write.
+        temporary = args.output / "log.csv.tmp"
+        with open(temporary, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(history)
+        os.replace(temporary, args.output / "log.csv")
+        if best_checkpoint is not None:
+            atomic_save({k: v for k, v in best_checkpoint.items() if k != "per_image"}, args.output / "best.pt")
+            atomic_json(args.output / "best_validation_per_image.json", best_checkpoint["per_image"])
+        elif epoch == 0:
+            for name in ("best.pt", "best_validation_per_image.json"):
+                (args.output / name).unlink(missing_ok=True)
+        summary = {"completed_epochs": epoch, "target_epochs": cfg["epochs"],
+                   "remaining_epochs": max(0, cfg["epochs"] - epoch),
+                   "training_complete": epoch == cfg["epochs"],
+                   "best": best if best["epoch"] else None, "pilot": pilot,
+                   "parameters": metadata["parameters"], "official_test_used": False}
+        atomic_json(args.output / "summary.json", summary)
+        atomic_json(args.output / "progress.json", {
+            **summary, "saved_at_utc": datetime.now(timezone.utc).isoformat(),
+            "meaning": "last safely saved epoch; not a live running-status indicator",
+            "next_epoch": epoch + 1 if epoch < cfg["epochs"] else None})
+
+    if not args.resume:
+        # Allow recovery even before the first epoch completes.
+        save_checkpoint(0)
+    export_progress(start_epoch)
 
     completed_epoch = start_epoch
-    for epoch in range(start_epoch + 1, cfg["epochs"] + 1):
+    end_epoch = cfg["epochs"]
+    if args.epochs_per_session is not None:
+        end_epoch = min(end_epoch, start_epoch + args.epochs_per_session)
+    if args.stop_after_epoch is not None:
+        end_epoch = min(end_epoch, args.stop_after_epoch)
+    atomic_json(args.output / "session.json", {
+        "started_at_utc": datetime.now(timezone.utc).isoformat(), "resumed_from": start_epoch,
+        "session_end_epoch": end_epoch, "target_epochs": cfg["epochs"],
+        "epochs_per_session": args.epochs_per_session, "source_sha256": metadata["source_sha256"],
+        "environment": metadata["environment"], "gpu": metadata["gpu"]})
+    print(json.dumps({"resumed_from": start_epoch, "session_end_epoch": end_epoch,
+                      "target_epochs": cfg["epochs"]}), flush=True)
+    for epoch in range(start_epoch + 1, end_epoch + 1):
         train_set.epoch = epoch
         model.train()
         totals, seen, started = {"loss": 0.0, "kd": 0.0}, 0, time.perf_counter()
@@ -236,27 +338,20 @@ def main():
         improved = scores["psnr"] > best["psnr"]
         if improved:
             best = {"psnr": scores["psnr"], "ssim": scores["ssim"], "epoch": epoch}
-            atomic_save({"weight": model.state_dict(), "epoch": epoch, "config": cfg, "scores": scores},
-                        args.output / "best.pt")
-            write_json(args.output / "best_validation_per_image.json", per_image)
-        atomic_save({"weight": model.state_dict(), "optimizer": optimizer.state_dict(),
-                     "scheduler": scheduler.state_dict(), "epoch": epoch, "best": best,
-                     "cuda_rng_state_all": torch.cuda.get_rng_state_all() if device.type == "cuda" else None,
-                     "torch_rng_state": torch.get_rng_state(), "generator_state": generator.get_state()},
-                    args.output / "last.pt")
+            best_checkpoint = {"weight": {k: v.detach().cpu().clone() for k, v in model.state_dict().items()},
+                               "epoch": epoch, "config": cfg, "scores": scores, "per_image": per_image}
         row = {"epoch": epoch, "loss": totals["loss"] / seen, "kd": totals["kd"] / seen,
                "val_psnr": scores["psnr"], "val_ssim": scores["ssim"], "lr": lr,
                "train_seconds": round(train_seconds, 3), "val_seconds": round(val_seconds, 3), "images_seen": seen}
-        with open(args.output / "log.csv", "a", newline="") as f:
-            csv.DictWriter(f, fieldnames=fields).writerow(row)
+        history.append(row)
+        save_checkpoint(epoch)
+        export_progress(epoch)
         print(json.dumps(row), flush=True)
         completed_epoch = epoch
         if args.stop_after_epoch is not None and epoch >= args.stop_after_epoch:
             break
-    write_json(args.output / "summary.json", {"completed_epochs": completed_epoch,
-                                              "training_complete": completed_epoch == cfg["epochs"],
-                                              "best": best, "pilot": pilot,
-                                              "parameters": metadata["parameters"], "official_test_used": False})
+    print(f"Saved {completed_epoch}/{cfg['epochs']} epochs. "
+          + ("Training complete." if completed_epoch == cfg["epochs"] else "Run again with --resume to continue."), flush=True)
 
 
 if __name__ == "__main__":

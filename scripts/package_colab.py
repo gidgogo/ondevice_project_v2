@@ -47,6 +47,7 @@ def notebook(model, digest):
                 EXPERIMENT = "gt_random_v1"
                 SEED = 42
                 EPOCHS = 120
+                EPOCHS_PER_SESSION = 10  # 한 번 클릭할 때 추가로 진행할 epoch. 총 EPOCHS는 유지.
                 BATCH_SIZE = 40
                 EXPECTED_CROP_MODE = "random"
                 BASE = Path("/content/drive/MyDrive/ondevice")
@@ -138,33 +139,33 @@ def notebook(model, digest):
                                "--set", *settings, "epochs=1"], check=True, cwd=REPO)
                 print("점검 성공. 본 학습은 새 초기 가중치에서 시작합니다.")
             '''),
-            cell("markdown", "## 4. 본 학습 / 이어서 학습\n각 epoch 종료 후 Drive에 저장합니다. 재접속 시 위의 준비 셀부터 실행하고 이 셀을 실행하면 마지막 완료 epoch에서 재개합니다. 진행 중이던 epoch는 다시 계산합니다. 완료된 학습은 건너뜁니다."),
+            cell("markdown", "## 4. 다음 10 epoch 실행 / 이어서 학습\n이 셀을 한 번 실행하면 EPOCHS_PER_SESSION만큼 추가 학습하고 멈춥니다. 같은 런타임에서는 이 셀만 다시 실행하면 다음 구간으로 이어집니다. 총 EPOCHS=120과 EXPERIMENT는 바꾸지 마세요. 매 epoch 종료 후 Drive에 저장하며, 끊겼을 때 진행 중이던 epoch는 다시 계산합니다. 새 런타임에서는 위의 준비 셀부터 다시 실행합니다. 첫 epoch 전에도 checkpoint를 저장하고, 최신 파일 손상 시 직전 저장본으로 복구합니다."),
             cell("code", '''
-                if OUTPUT.exists() and any(OUTPUT.iterdir()) and not (OUTPUT / "last.pt").exists():
-                    raise RuntimeError("저장된 첫 epoch가 없습니다. 기존 폴더를 보존하고 EXPERIMENT를 새 이름으로 바꾸세요.")
+                assert isinstance(EPOCHS_PER_SESSION, int) and EPOCHS_PER_SESSION > 0
+                resumable = any((OUTPUT / name).exists() for name in ("last.pt", "last.prev.pt"))
+                if OUTPUT.exists() and any(OUTPUT.iterdir()) and not resumable:
+                    raise RuntimeError("복구할 checkpoint가 없습니다. 기존 폴더를 보존하고 EXPERIMENT를 새 이름으로 바꾸세요.")
                 overrides = [*settings, f"epochs={EPOCHS}"]
                 effective = json.loads((REPO / "configs/colab_gt.json").read_text())
                 effective.update(model=MODEL, seed=SEED, epochs=EPOCHS, batch_size=BATCH_SIZE)
                 if (OUTPUT / "run.json").exists():
                     assert json.loads((OUTPUT / "run.json").read_text())["config"] == effective, "기존 실험과 설정이 다릅니다. 새 EXPERIMENT 이름을 사용하세요."
-                SUMMARY = OUTPUT / "summary.json"
-                finished = SUMMARY.exists() and json.loads(SUMMARY.read_text()).get("training_complete", False)
-                if finished:
-                    print("이미 완료된 실험입니다:", OUTPUT)
-                else:
-                    # 환경 기록은 결과 폴더 밖에 두어 신규 학습의 빈 폴더 검사를 유지합니다.
-                    envdir = BASE / "environments" / EXPERIMENT / f"{MODEL}_s{SEED}"
-                    envdir.mkdir(parents=True, exist_ok=True)
-                    stamp = uuid.uuid4().hex[:8]
-                    (envdir / f"{stamp}_pip.txt").write_text(subprocess.check_output(
-                        [sys.executable, "-m", "pip", "freeze"], text=True))
-                    (envdir / f"{stamp}_gpu.txt").write_text(subprocess.check_output(["nvidia-smi"], text=True))
-                    cmd = common + ["--output", str(OUTPUT)]
-                    if (OUTPUT / "last.pt").exists():
-                        cmd += ["--resume"]
-                    subprocess.run(cmd + ["--set", *overrides], check=True, cwd=REPO)
+                # 환경 기록은 결과 폴더 밖에 두어 신규 학습의 빈 폴더 검사를 유지합니다.
+                envdir = BASE / "environments" / EXPERIMENT / f"{MODEL}_s{SEED}"
+                envdir.mkdir(parents=True, exist_ok=True)
+                stamp = uuid.uuid4().hex[:8]
+                (envdir / f"{stamp}_pip.txt").write_text(subprocess.check_output(
+                    [sys.executable, "-m", "pip", "freeze"], text=True))
+                (envdir / f"{stamp}_gpu.txt").write_text(subprocess.check_output(["nvidia-smi"], text=True))
+                cmd = common + ["--output", str(OUTPUT), "--epochs-per-session", str(EPOCHS_PER_SESSION)]
+                if resumable:
+                    cmd += ["--resume"]
+                subprocess.run(cmd + ["--set", *overrides], check=True, cwd=REPO)
+                progress = json.loads((OUTPUT / "progress.json").read_text())
+                print(f"저장 완료: {progress['completed_epochs']}/{progress['target_epochs']} epoch")
+                print("전체 완료" if progress["training_complete"] else "더 진행하려면 이 셀만 다시 실행하세요.")
             '''),
-            cell("markdown", "## 5. 결과 확인\n`best.pt`는 검증 PSNR로 선발한 모델, `last.pt`는 재개용, `initial.pt`는 후속 증류와 초기값을 맞추기 위한 파일입니다. 최종 온디바이스 지연시간은 별도로 동일 노트북 CPU에서 측정합니다."),
+            cell("markdown", "## 5. 저장된 진행 상황·결과 확인\nprogress.json은 마지막으로 저장된 epoch를 나타내며 실시간 실행 여부를 뜻하지 않습니다. `best.pt`는 검증 PSNR로 선발한 모델, `last.pt`는 재개용, `last.prev.pt`는 직전 백업, `initial.pt`는 증류 비교용 초기값입니다. 최종 온디바이스 지연시간은 별도로 동일 노트북 CPU에서 측정합니다."),
             cell("code", '''
                 import csv
                 summary = json.loads((OUTPUT / "summary.json").read_text())
@@ -174,6 +175,7 @@ def notebook(model, digest):
                 for row in rows[-5:]:
                     print({k: row[k] for k in ["epoch", "val_psnr", "val_ssim", "train_seconds", "val_seconds"]})
                 print("결과 폴더:", OUTPUT)
+                print("다음 epoch:", json.loads((OUTPUT / "progress.json").read_text())["next_epoch"])
                 print("증류 시작 가중치:", OUTPUT / "initial.pt")
                 if MODEL == "maxplus":
                     print("Mini/Max 증류용 기본 교사 후보:", OUTPUT / "best.pt")

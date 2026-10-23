@@ -48,7 +48,10 @@
 
 - `initial.pt`: 학습 전 학생 가중치. 나중에 같은 모델의 증류 출발점으로 사용.
 - `best.pt`: 검증 평균 PSNR이 가장 높은 checkpoint.
-- `last.pt`: 마지막 완료 epoch의 가중치·optimizer·scheduler·CPU/CUDA RNG 상태.
+- `last.pt`: 마지막 완료 epoch의 가중치·optimizer·scheduler·CPU/CUDA RNG 상태. 학습 전 epoch 0에도 저장.
+- `last.prev.pt`: 직전 checkpoint 백업. last.pt가 없거나 읽히지 않으면 사용.
+- `progress.json`: 저장된 epoch / 전체 목표 / 다음 epoch / 저장 시각. 실시간 실행 상태 표시는 아님.
+- `session.json`: 이번 실행 구간·코드 해시·환경. 총 학습 설정과 구간 길이를 구분.
 - `log.csv`: epoch별 손실, 검증 PSNR/SSIM, 학습·검증 시간.
 - `run.json`: 설정, 데이터 목록·코드 해시, 초기값 해시, 실행 환경.
 - `summary.json`: 진행/완료 상태와 최적 검증 성능.
@@ -57,7 +60,15 @@
 
 ## 중단 후 재개
 
-재연결 후 위의 셀부터 다시 실행한다. 본 학습 셀은 `last.pt`가 있으면 자동으로 `--resume`을 붙인다. 중단된 epoch는 처음부터 다시 계산한다. 첫 epoch 저장 전에 끊겼으면 재개할 checkpoint가 없으므로 기존 폴더를 보존하고 새 EXPERIMENT 이름으로 시작한다. 설정이나 데이터 목록이 달라지면 재개를 거절한다.
+기본값은 **총 EPOCHS=120, 한 번 실행할 분량 EPOCHS_PER_SESSION=10**이다. 처음에는 1~10 epoch, 본 학습 셀을 다시 누르면 11~20 epoch를 실행한다. 구간 길이를 5나 20으로 바꿔도 전체 목표·학습률 일정·optimizer 상태는 유지된다. 이어갈 때 EPOCHS나 EXPERIMENT를 바꾸지 않는다.
+
+같은 런타임에서는 **4번 본 학습 셀만 다시 실행**한다. 새 런타임에서는 Drive 연결·코드·데이터 준비 셀부터 실행하고 본 학습 셀로 이어간다. `last.pt` 또는 `last.prev.pt`가 있으면 자동으로 `--resume`을 붙인다. 예를 들어 37번째 epoch 도중 끊기면 36까지 저장된 상태에서 37부터 다시 시작한다. 배치 중간의 정확한 위치를 이어가는 방식은 아니다.
+
+각 epoch의 학습·검증이 끝나면 checkpoint를 먼저 저장하고 로그·최적 모델·summary·progress를 갱신한다. checkpoint에 이력과 최적 모델도 포함하므로 저장 직후 끊겨 파생 파일 갱신이 덜 됐어도 다음 재개 시 복원한다. 최신 checkpoint를 읽을 수 없으면 직전 백업에서 복구하며, 이 경우 저장된 직전 epoch 이후 작업은 다시 계산한다.
+
+학습 전 epoch 0도 저장하므로 첫 epoch 중단도 재개할 수 있다. 단, 최초 checkpoint 자체가 저장되기 전에 끊겼거나 두 checkpoint가 모두 없거나 손상됐으면 자동 복구할 수 없다. 기존 폴더를 보존하고 상태를 점검한다. 설정이나 데이터 목록이 달라지면 재개를 거절한다. 기존 random 버전의 epoch checkpoint도 같은 설정이면 이어갈 수 있다. center 실험은 섞지 않는다.
+
+이미 120 epoch가 완료된 폴더를 다시 실행하면 학습을 반복하지 않는다. 파일을 매번 GitHub에 올릴 필요는 없고 학습 상태는 Drive에 저장된다. 저장과 GPU 재연결이 항상 성공함을 보장하지 않으므로 종료 전 `progress.json` 또는 노트북의 저장 완료 출력을 확인한다.
 
 ## 이후 증류와 연결
 
