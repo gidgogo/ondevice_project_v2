@@ -1,0 +1,7 @@
+run_id,model,condition,parameters,gpu,steps,batch_size,crop,train_minutes,val_minutes,total_minutes,sec_per_epoch_median,best_val_psnr_db,best_val_ssim,best_step,status
+mini_gt_s42,Mini,GT,36,Tesla T4,120 epoch,40,180,22.3,3.3,25.6,11.06,10.5542,0.3213,7,complete
+max_gt_s42,Max,GT,180,Tesla T4,120 epoch,40,180,22.9,4.3,27.2,11.48,13.534,0.3822,4,complete
+maxplus_gt_s42,Max+,GT,937,Tesla T4,120 epoch,40,180,25.6,5.1,30.8,13.24,17.1252,0.6199,78,complete
+mini_basekd_b0.3_s42,Mini,BaseKD,36,Tesla T4,120 epoch,40,180,22.8,3.3,26.1,11.36,10.5455,0.3195,16,complete
+max_basekd_b0.3_s42,Max,BaseKD,180,Tesla T4,120 epoch,40,180,26.2,5.1,31.3,13.09,13.5411,0.3807,4,complete
+retinexformer_teacher_s42,Retinexformer,Teacher,1605701,Tesla T4,18000/30000 iteration,8,256,453.1,4.0,457.2,,21.9929,0.7827,9000,incomplete (resumable)

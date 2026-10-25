@@ -1,0 +1,7 @@
+run_id,model,condition,parameters,split,count,psnr_db_mean,ssim_mean
+mini_gt_s42,Mini,GT,36,validation,69,10.554169882898746,0.3213038221001625
+max_gt_s42,Max,GT,180,validation,69,13.53395508337712,0.3821650664659514
+maxplus_gt_s42,Max+,GT,937,validation,69,17.125169090602707,0.619928825808608
+mini_basekd_b0.3_s42,Mini,BaseKD,36,validation,69,10.545540547025377,0.31946232018695364
+max_basekd_b0.3_s42,Max,BaseKD,180,validation,69,13.541136831477068,0.38070470702065073
+"retinexformer_teacher_s42 (it9000, 학습 중)",Retinexformer,Teacher,1605701,validation,69,21.992874808933426,0.7827465309612993

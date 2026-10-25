@@ -1,0 +1,3 @@
+student,teacher,beta,same_initial_pt,same_config_except_kd,epochs,gt_best_psnr_db,gt_best_ssim,gt_best_epoch,kd_best_psnr_db,kd_best_ssim,kd_best_epoch,delta_psnr_db,delta_ssim,images_kd_better,images_gt_better,per_image_delta_min_db,per_image_delta_max_db,status
+Mini,Max+ GT best.pt (17.13 dB),0.3,True,True,120,10.5542,0.3213,7,10.5455,0.3195,16,-0.0086,-0.0018,32,37,-0.673,1.265,"complete (1 seed, 1 beta)"
+Max,Max+ GT best.pt (17.13 dB),0.3,True,True,120,13.534,0.3822,4,13.5411,0.3807,4,0.0072,-0.0015,33,36,-0.305,0.696,"complete (1 seed, 1 beta)"

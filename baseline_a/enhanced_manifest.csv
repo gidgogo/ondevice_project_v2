@@ -1,0 +1,16 @@
+image_id,split,source_name,enhanced_path
+LOL-v1/1.png,test,1.png,enhanced/test/01_1.png
+LOL-v1/111.png,test,111.png,enhanced/test/02_111.png
+LOL-v1/146.png,test,146.png,enhanced/test/03_146.png
+LOL-v1/179.png,test,179.png,enhanced/test/04_179.png
+LOL-v1/22.png,test,22.png,enhanced/test/05_22.png
+LOL-v1/23.png,test,23.png,enhanced/test/06_23.png
+LOL-v1/493.png,test,493.png,enhanced/test/07_493.png
+LOL-v1/547.png,test,547.png,enhanced/test/08_547.png
+LOL-v1/55.png,test,55.png,enhanced/test/09_55.png
+LOL-v1/665.png,test,665.png,enhanced/test/10_665.png
+LOL-v1/669.png,test,669.png,enhanced/test/11_669.png
+LOL-v1/748.png,test,748.png,enhanced/test/12_748.png
+LOL-v1/778.png,test,778.png,enhanced/test/13_778.png
+LOL-v1/780.png,test,780.png,enhanced/test/14_780.png
+LOL-v1/79.png,test,79.png,enhanced/test/15_79.png

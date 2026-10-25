@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-10-23T18:37:36.567427+09:00",
+  "test_report": "runs/a_member_a_verification/metrics.json",
+  "validation_report": "runs/a_member_a_validation/metrics.json",
+  "score_sources": {
+    "test": "provided_recheck_report",
+    "validation": "validation_recheck"
+  },
+  "checkpoint_id": "a_max_seed42_epoch20",
+  "checkpoint_sha256": "1e2df6a4e420bf8335790cd14c8102ca58f9d804126c7a31f3275f648d445fe6",
+  "environment": {
+    "python": "3.14.2",
+    "torch": "2.14.0",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "cpu": "Apple M3",
+    "torch_threads": 1,
+    "interop_threads": 1
+  },
+  "test_already_disclosed": true,
+  "repository": "https://github.com/7b7hom/ultrafast-linet-baseline",
+  "reference_commit": "3ead18e7b34444aa19eb39c815da86d2dc024d08",
+  "enhanced_image_count": 15,
+  "common_metrics_sha256": "ec6420c5d47ed8739d7dbca1b75c0dd94ea2b02185c39b1a5d805ee2ee6ef9a5",
+  "requirements_sha256": "57daacf1708f1192b76247cb8a5515ff92397fe80419bdb023a4ccfd8958d144"
+}

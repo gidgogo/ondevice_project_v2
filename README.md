@@ -60,6 +60,8 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 | `vendor/` | 공식 UltraFast-LiNET 구현(커밋 `12e8c79`, Apache-2.0). 해시는 `provenance.json`에 고정 |
 | `scripts/*_a.py`, `prepare_data.py`, `evaluate.py`, `reproduce.py` | LOL-v1 재현 저장소 [gidgogo/ultrafast-linet-baseline](https://github.com/gidgogo/ultrafast-linet-baseline) `3ead18e`에서 가져온 기존 코드(LOL-v1 전용, 기록용) |
 | `weights/official_max.pkl` | 공식 공개 Max 가중치(LOL-v1) |
+| `results/midterm_lolv2/` | 중간발표용 LOL-v2-real 검증 69장 결과: 품질 CSV(A 형식), 학습 기록·시간, 증류 비교표, 그림, 7장 초안, 학생 best.pt 5개 |
+| `baseline_a/` | 팀원 A의 LOL-v1 기준 묶음(D 검토 수정본). 수정 내용은 `baseline_a/# 가이드라인/수정내역.md` |
 
 LOL-v1 재현 결과(시험 PSNR 17.9173 dB / SSIM 0.527209)는 기존 저장소에 기록되어 있으며, 새 LOL-v2-real 결과와 직접 비교하지 않는다.
 

@@ -1,5 +1,12 @@
 # 변경 이력
 
+## 2026-10-26 — 중간발표 결과와 A 기준 묶음 수정본 올림
+
+코드 변경 없음. 결과 파일과 문서만 추가했다.
+
+- `results/midterm_lolv2/`: Colab T4에서 끝난 일반 학습 3개(Mini 10.55 / Max 13.53 / Max+ 17.13 dB), Max+ 교사 증류 2개(β=0.3, Mini −0.01 / Max +0.01 dB), 학습 중인 Retinexformer 교사(18000/30000회, 최고 21.99 dB @9000회)의 검증 69장 결과. 실행 폴더의 `log.csv`·`summary.json`·`best_validation_per_image.json`을 옮기거나 합쳤고, 품질 CSV 평균이 각 `summary.json`의 best 값과 같음을 확인. 시험 100장은 사용하지 않음.
+- `baseline_a/`: 팀원 A의 LOL-v1 기준 묶음 2차 수정본(검사기 경로, LOL-v2 명부·변환 도구, 측정 범위 문구 등 19개 항목)과 3차 메모. `check_handoff.py` PASS.
+
 ## 2026-10-24 — 교사·증류 노트북 설정 반영, 교사 복구, 선택기 누락 검사
 
 실행 코드: [1c2ad21](https://github.com/gidgogo/ondevice_project_v2/commit/1c2ad2128f75242559859b8ddc1eced21c3c88bf). `colab/04_teacher`, `colab/05_kd`는 이 커밋을 사용한다. 일반 학습 노트북 3개는 바꾸지 않았다. **이전 `a0a07aa` 노트북으로 교사 본 학습을 시작하지 말 것.**

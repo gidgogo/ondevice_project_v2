@@ -1,0 +1,405 @@
+{
+  "dataset": "LOL-v1",
+  "split": "validation",
+  "count": 50,
+  "aggregate": {
+    "psnr": 16.061188888549804,
+    "ssim": 0.5156236219406128
+  },
+  "per_image": [
+    {
+      "name": "101.png",
+      "psnr": 21.058048248291016,
+      "ssim": 0.6044544577598572,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "109.png",
+      "psnr": 19.847341537475586,
+      "ssim": 0.5434003472328186,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "135.png",
+      "psnr": 12.755179405212402,
+      "ssim": 0.46339675784111023,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "139.png",
+      "psnr": 20.575265884399414,
+      "ssim": 0.512453019618988,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "143.png",
+      "psnr": 13.400646209716797,
+      "ssim": 0.4587548077106476,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "157.png",
+      "psnr": 22.784435272216797,
+      "ssim": 0.5905267596244812,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "16.png",
+      "psnr": 9.94215202331543,
+      "ssim": 0.39232444763183594,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "169.png",
+      "psnr": 24.564556121826172,
+      "ssim": 0.5813753604888916,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "180.png",
+      "psnr": 12.697529792785645,
+      "ssim": 0.44406381249427795,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "193.png",
+      "psnr": 15.092260360717773,
+      "ssim": 0.6248555779457092,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "211.png",
+      "psnr": 8.543007850646973,
+      "ssim": 0.35682806372642517,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "219.png",
+      "psnr": 17.089250564575195,
+      "ssim": 0.4716506004333496,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "246.png",
+      "psnr": 23.212993621826172,
+      "ssim": 0.5119833946228027,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "450.png",
+      "psnr": 4.6915411949157715,
+      "ssim": 0.39138171076774597,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "47.png",
+      "psnr": 22.018089294433594,
+      "ssim": 0.665522038936615,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "474.png",
+      "psnr": 13.7560453414917,
+      "ssim": 0.5457518696784973,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "495.png",
+      "psnr": 16.849712371826172,
+      "ssim": 0.4351480007171631,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "497.png",
+      "psnr": 19.671184539794922,
+      "ssim": 0.5901503562927246,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "501.png",
+      "psnr": 18.881393432617188,
+      "ssim": 0.6316166520118713,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "515.png",
+      "psnr": 13.251083374023438,
+      "ssim": 0.27088817954063416,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "527.png",
+      "psnr": 17.078384399414062,
+      "ssim": 0.498425155878067,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "540.png",
+      "psnr": 16.494518280029297,
+      "ssim": 0.49454763531684875,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "556.png",
+      "psnr": 16.683197021484375,
+      "ssim": 0.4702122211456299,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "557.png",
+      "psnr": 17.142433166503906,
+      "ssim": 0.47038474678993225,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "558.png",
+      "psnr": 19.29543685913086,
+      "ssim": 0.5131197571754456,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "56.png",
+      "psnr": 15.822637557983398,
+      "ssim": 0.5314667820930481,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "562.png",
+      "psnr": 19.68482208251953,
+      "ssim": 0.569851815700531,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "564.png",
+      "psnr": 17.928794860839844,
+      "ssim": 0.4691637456417084,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "566.png",
+      "psnr": 14.082807540893555,
+      "ssim": 0.4011251926422119,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "569.png",
+      "psnr": 15.375921249389648,
+      "ssim": 0.35843443870544434,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "571.png",
+      "psnr": 14.956533432006836,
+      "ssim": 0.48367586731910706,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "586.png",
+      "psnr": 15.316787719726562,
+      "ssim": 0.4578065872192383,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "587.png",
+      "psnr": 15.285258293151855,
+      "ssim": 0.45810094475746155,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "588.png",
+      "psnr": 15.311951637268066,
+      "ssim": 0.4612851142883301,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "590.png",
+      "psnr": 5.111939907073975,
+      "ssim": 0.5291988253593445,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "591.png",
+      "psnr": 5.124211311340332,
+      "ssim": 0.5293768048286438,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "621.png",
+      "psnr": 15.876850128173828,
+      "ssim": 0.5795717239379883,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "640.png",
+      "psnr": 11.816778182983398,
+      "ssim": 0.4526781141757965,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "641.png",
+      "psnr": 20.877330780029297,
+      "ssim": 0.6479781270027161,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "642.png",
+      "psnr": 20.80265235900879,
+      "ssim": 0.6469685435295105,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "643.png",
+      "psnr": 9.399041175842285,
+      "ssim": 0.6745899319648743,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "644.png",
+      "psnr": 9.41733169555664,
+      "ssim": 0.6753890514373779,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "660.png",
+      "psnr": 17.959020614624023,
+      "ssim": 0.48803868889808655,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "661.png",
+      "psnr": 18.019390106201172,
+      "ssim": 0.4971027374267578,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "69.png",
+      "psnr": 22.556854248046875,
+      "ssim": 0.5858725309371948,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "735.png",
+      "psnr": 13.66342544555664,
+      "ssim": 0.5990083813667297,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "750.png",
+      "psnr": 24.74399185180664,
+      "ssim": 0.5039101243019104,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "77.png",
+      "psnr": 13.785318374633789,
+      "ssim": 0.5347487330436707,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "89.png",
+      "psnr": 18.862396240234375,
+      "ssim": 0.5254223346710205,
+      "width": 600,
+      "height": 400
+    },
+    {
+      "name": "91.png",
+      "psnr": 13.901711463928223,
+      "ssim": 0.5872002243995667,
+      "width": 600,
+      "height": 400
+    }
+  ],
+  "metrics": {
+    "color_space": "RGB",
+    "dtype": "float32",
+    "data_range": 1.0,
+    "resolution": "full input resolution",
+    "prediction_clamp": [
+      0.0,
+      1.0
+    ],
+    "border_crop": 0,
+    "brightness_matching": false,
+    "quantize_before_scoring": false,
+    "aggregation": "arithmetic mean of per-image scores",
+    "ssim": "pinned vendor.metrics.ssim / pytorch_msssim.ssim defaults",
+    "psnr": "pinned vendor.metrics.psnr; exact equality returns 100 dB"
+  },
+  "verification": {
+    "selected_epoch": 20,
+    "best_validation_psnr": 16.061188888549804,
+    "completed_epochs": 360,
+    "checkpoint_sha256": {
+      "best": "1e2df6a4e420bf8335790cd14c8102ca58f9d804126c7a31f3275f648d445fe6",
+      "last": "62267364ba54934e54b527d29b42d78d069f4c2024ccb787814fa14f8631d607"
+    },
+    "run_metadata_sha256": "f6c56b3ea9f086216b805eb5617d6c5dfff1c9379c9e3635a10a338f8ee5d5d4",
+    "training_summary_sha256": "126c2d797807cb4343d1e8774a796e1ff9ebdf279caa464483c1fe4bfec76652",
+    "training_log_sha256": "b7499305a12414edf06a26419fcb0a46f7d9f981895d6c73fde63b525d1149bd",
+    "validation_only_selection_verified": true
+  },
+  "manifests_sha256": {
+    "train": "03209fd4ef17be7794a675a52b54087cd98c6aa36230eaf23692022e9e2c54ba",
+    "validation": "5c835462afe878fc0acc181c31c0ebdaac337203bc686101e3ec8c5915e4d086",
+    "test": "653c1078718191477587e0915ba77e9045197c27471a16e33b673dfb5afc4df1"
+  },
+  "environment": {
+    "python": "3.14.2",
+    "torch": "2.14.0",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "cpu": "Apple M3",
+    "torch_threads": 1,
+    "interop_threads": 1
+  },
+  "score_source": "validation_recheck",
+  "checkpoint_path": "reports/a_full_seed42/best.pt"
+}
