@@ -1,0 +1,8 @@
+# 리눅스 GPU 서버용. torch/torchvision은 서버 드라이버에 맞는 CUDA 빌드가 pip 기본값으로 설치된다.
+# 이미 CUDA PyTorch가 있는 conda 환경을 쓰려면 PYTHON=<그 python 경로> 로 실행한다(scripts/run_4090.sh).
+torch
+torchvision
+numpy
+pillow
+pytorch-msssim==1.0.0
+einops==0.8.2

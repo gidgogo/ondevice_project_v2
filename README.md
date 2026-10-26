@@ -53,6 +53,7 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 | `scripts/eval_checkpoint.py` | 학생·교사 checkpoint의 이미지별 PSNR·SSIM(·LPIPS) 평가. 시험은 `--allow-test` 명시 |
 | `scripts/selector.py` | 규칙 기반 모델 선택기: 밝기 특징, 검증으로 임계값 고정, 무작위 선택 대비 이득, 시험 적용 |
 | `colab/04_teacher`, `colab/05_kd` | 교사 학습·증류 실행 노트북 ([2단계 안내](docs/stage2.md)) |
+| `scripts/run_4090.sh`, `scripts/run_remaining.py` | 리눅스 GPU 서버에서 남은 학습(교사 이어서 학습 + Retinexformer 증류 3개)을 한 번에 실행, 단계별 메일·알림 ([서버 안내](docs/server_4090.md)) |
 | `scripts/evaluation.py` | PSNR·SSIM·LPIPS 평가(시험 분할은 명시적 허용 필요) |
 | `scripts/benchmark_cpu.py` | CPU 시간(model / end-to-end, 평균·p95)·메모리 측정 |
 | `docs/` | 실행 계획표, 역할 분담, 설계 결정, 데이터, 측정 규약, 교사 후보 |
