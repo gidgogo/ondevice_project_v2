@@ -1,6 +1,6 @@
 # 중간발표용 LOL-v2-real 결과 (2026-10-26)
 
-Colab T4에서 끝난 일반 학습 3개, Max+ 교사 증류 2개, 진행 중인 Retinexformer 교사(18000/30000회)의 **검증 69장** 결과다. 시험 100장은 쓰지 않았다.
+Colab T4에서 끝난 일반 학습 3개, Max+ 교사 증류 2개, Retinexformer 교사(30000회 완료)의 **검증 69장** 결과다. 시험 100장은 쓰지 않았다.
 원자료는 각 실행 폴더(`내 드라이브/ondevice/runs/...`)의 `log.csv`, `summary.json`, `best_validation_per_image.json`이고, 이 폴더의 표는 그것을 그대로 옮기거나 합친 것이다.
 
 | 실행 | 최고 검증 PSNR / SSIM | 최고 시점 |
@@ -10,7 +10,7 @@ Colab T4에서 끝난 일반 학습 3개, Max+ 교사 증류 2개, 진행 중인
 | Max+ 일반 (`gt_random_v1/maxplus_gt_s42`) | 17.1252 dB / 0.6199 | 78 epoch |
 | Mini 증류, 교사 Max+, β=0.3 (`kd_random_v1/mini_basekd_b0.3_s42`) | 10.5455 dB / 0.3195 | 16 epoch |
 | Max 증류, 교사 Max+, β=0.3 (`kd_random_v1/max_basekd_b0.3_s42`) | 13.5411 dB / 0.3807 | 4 epoch |
-| Retinexformer 교사, 학습 중 (`teachers/teacher_v1/retinexformer_s42`) | 21.9929 dB / 0.7827 | 9000회 |
+| Retinexformer 교사, 30000회 완료 (`teachers/teacher_v1/retinexformer_s42`) | 21.9929 dB / 0.7827 | 9000회 |
 
 증류 2개는 같은 모델 일반 학습의 `initial.pt`(SHA-256 일치)와 같은 설정에서 시작했고, 교사 checkpoint SHA-256은 `59b626ec…`(Max+ 일반 학습 best.pt)다.
 
@@ -35,5 +35,5 @@ python3 baseline_a/team_a_tools/lolv2_tables.py quality --manifest-csv baseline_
 ## 주의
 
 - 모든 값은 seed 42 한 번의 결과다. 증류는 β=0.3 하나만 해 봤다.
-- Retinexformer는 학습이 끝나지 않았다. 표의 값은 9000회 시점 best.pt이며, 이후 학습을 이어가면 바뀔 수 있다.
+- Retinexformer는 30000회를 다 학습했지만 검증 PSNR 최고는 9000회(21.99 dB)였다. 8000회 이후 검증 PSNR은 20.8~22.0 dB에서 오르내렸고 SSIM은 0.78→0.80으로 조금씩 올랐다. 미리 정한 기준(검증 PSNR 최대)대로 9000회 가중치를 교사로 쓴다. 18000회 이후는 다른 Colab 계정(T4)에서 이어서 학습했다.
 - `training_time.csv`의 시간은 로그의 학습·검증 시간 합계다. Colab 연결, 데이터 압축 해제, 모델 불러오기 시간은 빠져 있다.
