@@ -55,7 +55,8 @@ UltraFast-LiNET 기반 Mini·Max·Max+에서 일반 학습과 출력 기반 지�
 | `colab/04_teacher`, `colab/05_kd` | 교사 학습·증류 실행 노트북 ([2단계 안내](docs/stage2.md)) |
 | `scripts/run_4090.sh`, `scripts/run_remaining.py` | 리눅스 GPU 서버에서 남은 학습(교사 이어서 학습 + Retinexformer 증류 3개)을 한 번에 실행, 단계별 메일·알림 ([서버 안내](docs/server_4090.md)) |
 | `scripts/evaluation.py` | PSNR·SSIM·LPIPS 평가(시험 분할은 명시적 허용 필요) |
-| `scripts/benchmark_cpu.py` | CPU 시간(model / end-to-end, 평균·p95)·메모리 측정 |
+| `scripts/benchmark_cpu.py` | CPU 시간(model / end-to-end, 평균·p95)·메모리 측정. `--csv`로 반복별 원자료(B 형식) |
+| `scripts/enhance_image.py` | 학습된 Mini·Max·Max+로 사진(또는 폴더) 보정 후 저장 (결과 확인·시연용) |
 | `docs/` | 실행 계획표, 역할 분담, 설계 결정, 데이터, 측정 규약, 교사 후보 |
 | `CHANGELOG.md` | 변경 파일·이유·관련 커밋·검증 범위 |
 | `vendor/` | 공식 UltraFast-LiNET 구현(커밋 `12e8c79`, Apache-2.0). 해시는 `provenance.json`에 고정 |

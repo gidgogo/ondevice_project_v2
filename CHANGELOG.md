@@ -1,5 +1,11 @@
 # 변경 이력
 
+## 2026-10-26 — CPU 측정 원자료 CSV, 사진 보정 스크립트
+
+- `scripts/benchmark_cpu.py`: `--csv` 추가. 반복마다 `model_id, checkpoint_status, width, height, threads, repeat_id, inference_ms(model), total_ms(end_to_end)` 한 줄(역할 문서 B 결과 필드). JSON 보고에 표준편차와 반복별 값, 사용한 checkpoint 추가. 측정 방식은 그대로.
+- `scripts/enhance_image.py`: 학습된 best.pt로 사진 한 장 또는 폴더를 보정해 PNG 저장. 모델과 checkpoint가 다르면 거부.
+- `tests/test_benchmark_csv.py` 추가.
+
 ## 2026-10-26 — 서버 일괄 실행기 (학교 4090)
 
 기존 학습 코드(`train.py`, `train_teacher.py` 등)는 바꾸지 않았다. 실행 순서를 묶는 파일만 추가했다.

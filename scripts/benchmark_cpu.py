@@ -6,7 +6,12 @@ Two scopes are timed per image:
   end_to_end: PNG decode -> tensor -> forward -> clamp -> uint8 HWC array
               (disk write and display excluded)
 Untrained (random) weights are fine for timing: cost does not depend on values.
+
+--csv writes every repeat (team B format): model_id, checkpoint_status, width, height,
+threads, repeat_id, inference_ms (model scope), total_ms (end_to_end scope).
+The two scopes run in separate loops; repeat_id pairs the i-th sample of each.
 """
+import csv
 import argparse
 import json
 import resource
@@ -19,6 +24,7 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+MODEL_IDS = {"mini": "UltraFastLiNET_Mini", "max": "UltraFastLiNET_Max", "maxplus": "UltraFastLiNET_MaxPlus"}
 
 
 def child(model_name, image, threads, warmup, repeats, checkpoint):
@@ -53,10 +59,13 @@ def child(model_name, image, threads, warmup, repeats, checkpoint):
                 fn()
                 samples.append((time.perf_counter_ns() - t0) / 1e6)
             results[scope] = {"mean_ms": statistics.mean(samples), "median_ms": statistics.median(samples),
-                              "p95_ms": float(np.percentile(samples, 95)), "min_ms": min(samples)}
+                              "p95_ms": float(np.percentile(samples, 95)), "min_ms": min(samples),
+                              "stdev_ms": statistics.stdev(samples) if len(samples) > 1 else 0.0,
+                              "samples_ms": samples}
     scale = 1024 ** 2 if sys.platform == "darwin" else 1024
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    return {"model": model_name, "parameters": count_parameters(model),
+    return {"model": model_name, "checkpoint": str(checkpoint) if checkpoint else None,
+            "parameters": count_parameters(model),
             "parameter_bytes_fp32": sum(p.numel() * 4 for p in model.parameters()),
             "input_shape_nchw": list(x.shape), "threads": threads, "warmup": warmup, "repeats": repeats,
             "latency": results,
@@ -75,6 +84,7 @@ def main():
     p.add_argument("--repeats", type=int, default=100)
     p.add_argument("--checkpoint", action="append", default=[], metavar="MODEL=PATH")
     p.add_argument("--output", type=Path)
+    p.add_argument("--csv", type=Path, help="반복별 원자료 CSV (B 형식)")
     p.add_argument("--child", help=argparse.SUPPRESS)
     args = p.parse_args()
     checkpoints = dict(item.split("=", 1) for item in args.checkpoint)
@@ -95,6 +105,19 @@ def main():
         print(f"{name:8s} params={report['parameters']:4d}  model median {lat['model']['median_ms']:.2f} ms "
               f"(p95 {lat['model']['p95_ms']:.2f})  end-to-end median {lat['end_to_end']['median_ms']:.2f} ms "
               f"(p95 {lat['end_to_end']['p95_ms']:.2f})  peak RSS {report['memory']['process_peak_rss_mib']:.0f} MiB")
+    if args.csv:
+        args.csv.parent.mkdir(parents=True, exist_ok=True)
+        with open(args.csv, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["model_id", "checkpoint_status", "width", "height", "threads", "repeat_id",
+                             "inference_ms", "total_ms"])
+            for r in reports:
+                status = f"trained:{Path(r['checkpoint']).name}" if r["checkpoint"] else "untrained (timing only)"
+                _, _, height, width = r["input_shape_nchw"]
+                pairs = zip(r["latency"]["model"]["samples_ms"], r["latency"]["end_to_end"]["samples_ms"])
+                for i, (model_ms, total_ms) in enumerate(pairs, 1):
+                    writer.writerow([MODEL_IDS.get(r["model"], r["model"]), status, width, height, r["threads"], i,
+                                     f"{model_ms:.4f}", f"{total_ms:.4f}"])
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps({"protocol": "docs/measurement_protocol.md", "image": str(args.image),
