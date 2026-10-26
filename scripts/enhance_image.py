@@ -1,4 +1,4 @@
-"""사진 한 장(또는 폴더)을 학습된 Mini / Max / Max+로 보정해 PNG로 저장한다 (CPU, 결과 확인·시연용).
+"""사진 한 장(또는 폴더)을 학습된 Mini / Max / Max+ / Retinexformer 교사로 보정해 PNG로 저장한다 (CPU, 결과 확인·시연용).
 
     python scripts/enhance_image.py --model maxplus --checkpoint weights/maxplus_gt_s42_best.pt \
         --input low.png --output out.png
@@ -17,7 +17,7 @@ from models import build_model, count_parameters
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--model", choices=["mini", "max", "maxplus"], required=True)
+    p.add_argument("--model", choices=["mini", "max", "maxplus", "retinexformer"], required=True)
     p.add_argument("--checkpoint", type=Path, required=True, help="학습된 best.pt")
     p.add_argument("--input", type=Path, required=True, help="PNG 파일 또는 PNG가 든 폴더")
     p.add_argument("--output", type=Path, required=True, help="파일 입력이면 PNG 경로, 폴더 입력이면 폴더")
@@ -25,9 +25,14 @@ def main():
     args = p.parse_args()
 
     torch.set_num_threads(args.threads)
-    model = build_model(args.model).eval()
+    if args.model == "retinexformer":  # 교사는 einops와 vendor_retinexformer가 필요해서 이때만 불러온다
+        from teacher_models import build_teacher
+        model = build_teacher(args.model).eval()
+    else:
+        model = build_model(args.model).eval()
     state = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
-    saved = state.get("model") or state.get("config", {}).get("model")  # initial.pt는 model, best.pt는 config 안에 기록
+    # initial.pt는 model, 학생 best.pt는 config.model, 교사 best.pt는 teacher 키에 모델 이름이 있다
+    saved = state.get("model") or state.get("teacher") or state.get("config", {}).get("model")
     if saved not in (None, args.model):
         raise SystemExit(f"checkpoint는 {saved} 모델입니다. --model {saved} 로 실행하세요.")
     model.load_state_dict(state.get("weight", state))
