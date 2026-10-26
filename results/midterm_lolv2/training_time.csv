@@ -4,4 +4,7 @@ max_gt_s42,Max,GT,180,Tesla T4,120 epoch,40,180,22.9,4.3,27.2,11.48,13.534,0.382
 maxplus_gt_s42,Max+,GT,937,Tesla T4,120 epoch,40,180,25.6,5.1,30.8,13.24,17.1252,0.6199,78,complete
 mini_basekd_b0.3_s42,Mini,BaseKD,36,Tesla T4,120 epoch,40,180,22.8,3.3,26.1,11.36,10.5455,0.3195,16,complete
 max_basekd_b0.3_s42,Max,BaseKD,180,Tesla T4,120 epoch,40,180,26.2,5.1,31.3,13.09,13.5411,0.3807,4,complete
+mini_strongkd_b0.3_s42,Mini,StrongKD,36,Tesla T4,120 epoch,40,180,47.8,3.0,50.8,23.89,10.5485,0.3192,16,complete
+max_strongkd_b0.3_s42,Max,StrongKD,180,Tesla T4,120 epoch,40,180,52.1,4.5,56.6,26.26,13.5356,0.3809,4,complete
+maxplus_strongkd_b0.3_s42,Max+,StrongKD,937,Tesla T4,120 epoch,40,180,51.6,4.6,56.2,25.66,17.1344,0.6023,63,complete
 retinexformer_teacher_s42,Retinexformer,Teacher,1605701,Tesla T4,30000/30000 iteration,8,256,741.5,6.7,748.2,,21.9929,0.7827,9000,complete

@@ -1,5 +1,9 @@
 # 변경 이력
 
+## 2026-10-27 — Retinexformer 교사 증류 3개 결과 추가
+
+- `results/midterm_lolv2/`: Mini·Max·Max+ ← Retinexformer(9000회 best, 21.99 dB) 증류 결과(β=0.3, 120 epoch, Colab T4). 세 실행 모두 일반 학습 `initial.pt`·설정 일치, 같은 교사 SHA-256(`e5c2f0a2…`) 확인. 일반 학습 대비 PSNR −0.006 / +0.002 / +0.009 dB. 비교표·품질 CSV·학습 기록·그림·7장 초안 갱신, 증류 손실 그림 추가.
+
 ## 2026-10-26 — CPU 측정 원자료 CSV, 사진 보정 스크립트
 
 - `scripts/benchmark_cpu.py`: `--csv` 추가. 반복마다 `model_id, checkpoint_status, width, height, threads, repeat_id, inference_ms(model), total_ms(end_to_end)` 한 줄(역할 문서 B 결과 필드). JSON 보고에 표준편차와 반복별 값, 사용한 checkpoint 추가. 측정 방식은 그대로.
