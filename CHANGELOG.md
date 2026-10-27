@@ -1,5 +1,9 @@
 # 변경 이력
 
+## 2026-10-27 — 선택 비용 측정 범위 분리
+
+- `scripts/selector.py time`: `compute`(이미 읽은 사진에서 썸네일·밝기 통계·규칙 비교)와 `with_decode`(PNG 읽기 포함)를 따로 측정하고 `--output`으로 JSON 저장. 모델 end_to_end에 PNG 읽기가 이미 들어 있으므로 선택 시스템 시간은 end_to_end + compute로 계산하고, `fit --selector-ms`에는 compute 중앙값을 쓴다(읽기 시간 이중 계산 방지). 특징 값 계산 결과는 수정 전과 같음을 확인.
+
 ## 2026-10-27 — Retinexformer 교사 증류 3개 결과 추가
 
 - `results/midterm_lolv2/`: Mini·Max·Max+ ← Retinexformer(9000회 best, 21.99 dB) 증류 결과(β=0.3, 120 epoch, Colab T4). 세 실행 모두 일반 학습 `initial.pt`·설정 일치, 같은 교사 SHA-256(`e5c2f0a2…`) 확인. 일반 학습 대비 PSNR −0.006 / +0.002 / +0.009 dB. 비교표·품질 CSV·학습 기록·그림·7장 초안 갱신, 증류 손실 그림 추가.

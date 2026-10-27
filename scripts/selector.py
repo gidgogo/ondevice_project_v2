@@ -31,16 +31,20 @@ MODELS = ("mini", "max", "maxplus")
 FEATURES = ("mean", "std", "p10", "p50", "p90", "dark_ratio", "bright_ratio", "grad_mean")
 
 
-def image_features(path, size=64):
-    """64x64 썸네일(BOX 축소)의 휘도 통계. 실제 잡음 추정이 아니라 저비용 통계량이다."""
-    with Image.open(path) as image:
-        small = np.asarray(image.convert("RGB").resize((size, size), Image.BOX), dtype=np.float32) / 255
+def features_from_image(image, size=64):
+    """이미 읽은 RGB 사진(PIL)에서 64x64 썸네일(BOX 축소)의 휘도 통계. 실제 잡음 추정이 아니라 저비용 통계량이다."""
+    small = np.asarray(image.resize((size, size), Image.BOX), dtype=np.float32) / 255
     y = small @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
     grad = (np.abs(np.diff(y, axis=0)).mean() + np.abs(np.diff(y, axis=1)).mean()) / 2
     return {"mean": float(y.mean()), "std": float(y.std()), "p10": float(np.percentile(y, 10)),
             "p50": float(np.percentile(y, 50)), "p90": float(np.percentile(y, 90)),
             "dark_ratio": float((y < 0.1).mean()), "bright_ratio": float((y > 0.9).mean()),
             "grad_mean": float(grad)}
+
+
+def image_features(path, size=64):
+    with Image.open(path) as image:
+        return features_from_image(image.convert("RGB"), size)
 
 
 def manifest_features(manifest, data_root):
@@ -193,16 +197,40 @@ def cmd_apply(args):
 
 
 def cmd_time(args):
-    for _ in range(args.warmup):
-        image_features(args.image)
-    samples = []
-    for _ in range(args.repeats):
-        t0 = time.perf_counter_ns()
-        image_features(args.image)
-        samples.append((time.perf_counter_ns() - t0) / 1e6)
-    print(json.dumps({"selector_median_ms": statistics.median(samples),
-                      "selector_p95_ms": float(np.percentile(samples, 95)),
-                      "scope": "PNG decode + 64x64 thumbnail + luminance statistics"}))
+    """두 범위를 따로 잰다.
+    compute: 이미 읽은 사진에서 썸네일 + 밝기 통계 + 규칙 비교. 선택 시스템 시간 = 모델 end_to_end + compute
+             (end_to_end에 PNG 읽기가 이미 들어 있으므로, 같은 사진을 한 번 읽어 선택과 보정에 같이 쓴다고 본다)
+    with_decode: PNG 읽기부터 포함한 값 (참고용, 위 합산에 쓰면 읽기 시간이 두 번 들어감)"""
+    import platform
+    with Image.open(args.image) as image:
+        rgb = image.convert("RGB")
+        rgb.load()
+
+    def compute():
+        f = features_from_image(rgb)
+        return assign(f["mean"], 0.05, 0.1, False)  # 규칙 비교까지 (임계값 값은 시간에 영향 없음)
+
+    def with_decode():
+        return image_features(args.image)
+
+    report = {"image": str(args.image), "size": list(rgb.size), "warmup": args.warmup, "repeats": args.repeats,
+              "platform": platform.platform(), "processor": platform.processor() or platform.machine()}
+    for name, fn in (("compute", compute), ("with_decode", with_decode)):
+        for _ in range(args.warmup):
+            fn()
+        samples = []
+        for _ in range(args.repeats):
+            t0 = time.perf_counter_ns()
+            fn()
+            samples.append((time.perf_counter_ns() - t0) / 1e6)
+        report[name] = {"mean_ms": statistics.mean(samples), "median_ms": statistics.median(samples),
+                        "p95_ms": float(np.percentile(samples, 95)), "min_ms": min(samples)}
+    report["selector_ms_for_fit"] = report["compute"]["median_ms"]
+    report["note"] = "fit의 --selector-ms에는 compute 중앙값을 쓴다. with_decode는 PNG 읽기 포함 참고값."
+    print(json.dumps(report, indent=2, ensure_ascii=False))
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def main():
@@ -247,6 +275,7 @@ def main():
     q.add_argument("--image", type=Path, required=True)
     q.add_argument("--warmup", type=int, default=10)
     q.add_argument("--repeats", type=int, default=100)
+    q.add_argument("--output", type=Path, help="측정 결과 JSON 저장 경로")
     q.set_defaults(func=cmd_time)
 
     args = p.parse_args()

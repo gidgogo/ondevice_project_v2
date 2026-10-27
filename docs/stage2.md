@@ -46,8 +46,9 @@ python scripts/eval_checkpoint.py --model mini --checkpoint runs/.../best.pt \
 어두운 사진일수록 비싼 모델을 쓰는 규칙(가설)을 검증 69장에서 맞춘다: 64×64 썸네일 평균 휘도 `f`가 `f < t1 → Max+*`, `t1 ≤ f < t2 → Max*`, 그 외 `Mini*`.
 
 ```bash
-# 선택 비용(썸네일+통계) 측정 — B가 M5에서
-python scripts/selector.py time --image <검증 저조도 PNG>
+# 선택 비용 측정 — B가 M5에서. compute(읽은 사진에서 썸네일+통계+규칙)와 with_decode(PNG 읽기 포함)를 따로 출력
+# 선택 시스템 시간 = 모델 end_to_end + compute (읽기는 end_to_end에 이미 포함). fit의 --selector-ms = compute 중앙값
+python scripts/selector.py time --image <검증 저조도 PNG> --output reports/selector_time_m5.json
 # 밝기 특징표 (C의 밝기 분석용)
 python scripts/selector.py features --manifest manifests/lolv2_real/validation.json --data-root ... --output reports/val_features.csv
 # 규칙 맞추기: 분위수 격자(기본 10단계)에서 Max+* 대비 PSNR 0.2 dB 이내인 가장 빠른 규칙
